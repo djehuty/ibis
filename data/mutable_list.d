@@ -26,7 +26,7 @@ public:
     _data[0..$] = initializer;
   }
 
-  this(void*[] values...) {
+  this(void*[] values) {
     _data = values.dup;
     _count = _data.length;
   }
