@@ -84,7 +84,7 @@ public:
 
   void write(ubyte[] data) {
     version(linux) {
-      printf("%*s", data.length, cast(char*)data.ptr);
+      printf("%.*s\0".ptr, data.length, cast(char*)data.ptr);
     }
   }
 
