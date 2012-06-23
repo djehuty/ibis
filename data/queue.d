@@ -19,7 +19,7 @@ public:
     _tail = null;
   }
 
-  this(void*[] values...) {
+  this(void*[] values) {
     foreach(value; values) {
       enqueue(value);
     }
