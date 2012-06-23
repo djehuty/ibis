@@ -1,5 +1,8 @@
 module chrono.date_time;
 
+import chrono.month;
+import chrono.weekday;
+
 final class DateTime {
 private:
   Month _month;
