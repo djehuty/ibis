@@ -2,6 +2,8 @@ module chrono.date_time;
 
 import chrono.month;
 import chrono.weekday;
+import chrono.date;
+import chrono.time;
 
 final class DateTime {
 private:
@@ -42,6 +44,14 @@ public:
 
   long year() {
     return _year;
+  }
+
+  Date date() {
+    return new Date(_month, _day, _year);
+  }
+
+  Time time() {
+    return new Time(_micros);
   }
 
   long hour() {
