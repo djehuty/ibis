@@ -28,21 +28,17 @@ public:
   }
 
   char[] formatDate(Month month, uint day, long year) {
-    auto format = new Format;
-
-    char[] ret = format.integer(day, 10);
+    char[] ret = Format.integer(day, 10);
     ret ~= " ";
     ret ~= formatMonth(month);
     ret ~= " ";
-    ret ~= format.integer(year, 10);
+    ret ~= Format.integer(year, 10);
 
     return ret;
   }
 
   char[] formatDate(Month month, uint day) {
-    auto format = new Format;
-
-    char[] ret = format.integer(day, 10);
+    char[] ret = Format.integer(day, 10);
     ret ~= " ";
     ret ~= formatMonth(month);
 
@@ -64,31 +60,27 @@ public:
   }
 
   char[] formatTime(uint hour, uint minute) {
-    auto format = new Format;
-
-    char[] ret = format.integer(hour, 10);
+    char[] ret = Format.integer(hour, 10);
     ret ~= " h ";
     if (minute < 10) {
       ret ~= "0";
     }
-    ret ~= format.integer(minute, 10);
+    ret ~= Format.integer(minute, 10);
     return ret;
   }
 
   char[] formatTime(uint hour, uint minute, uint second) {
-    auto format = new Format;
-
-    char[] ret = format.integer(hour, 10);
+    char[] ret = Format.integer(hour, 10);
     ret ~= ":";
     if (minute < 10) {
       ret ~= "0";
     }
-    ret ~= format.integer(minute, 10);
+    ret ~= Format.integer(minute, 10);
     ret ~= ":";
     if (second < 10) {
       ret ~= "0";
     }
-    ret ~= format.integer(second, 10);
+    ret ~= Format.integer(second, 10);
     return ret;
   }
 

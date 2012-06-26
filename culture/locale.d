@@ -37,7 +37,7 @@ public:
     _dateLongFunc      = dateLongFunc;
     _dateShortFunc     = dateShortFunc;
     _dateTimeShortFunc = dateTimeShortFunc;
-    _dateTimeShortFunc = dateTimeShortFunc;
+    _dateTimeLongFunc  = dateTimeLongFunc;
     _monthFunc         = monthFunc;
     _weekdayFunc       = weekdayFunc;
     _floatingPointFunc = floatingPointFunc;

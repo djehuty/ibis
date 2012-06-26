@@ -28,9 +28,8 @@ public:
   }
 
   char[] formatDate(Month month, uint day) {
-    auto format = new Format;
     char[] ret = formatMonth(month);
-    ret ~= " " ~ format.integer(day, 10);
+    ret ~= " " ~ Format.integer(day, 10);
 
     if (day > 10 && day < 14) {
       ret ~= "th";
@@ -56,9 +55,8 @@ public:
   }
 
   char[] formatDate(Month month, uint day, long year) {
-    auto format = new Format;
     char[] ret = formatMonth(month);
-    ret ~= " " ~ format.integer(day, 10);
+    ret ~= " " ~ Format.integer(day, 10);
 
     if (day > 10 && day < 14) {
       ret ~= "th";
@@ -81,13 +79,12 @@ public:
     }
 
     ret ~= ", ";
-    ret ~= format.integer(year, 10);
+    ret ~= Format.integer(year, 10);
 
     return ret;
   }
 
   char[] formatDateTime(Month month, uint day, long year, uint hour, uint minute) {
-    auto format = new Format;
     char[] ret = formatTime(hour, minute);
     ret ~= " on ";
     ret ~= formatDate(month, day, year);
@@ -95,7 +92,6 @@ public:
   }
 
   char[] formatDateTime(Month month, uint day, long year, uint hour, uint minute, uint second) {
-    auto format = new Format;
     char[] ret = formatTime(hour, minute, second);
     ret ~= " on ";
     ret ~= formatDate(month, day, year);
@@ -103,31 +99,27 @@ public:
   }
 
   char[] formatTime(uint hour, uint minute) {
-    auto format = new Format;
-
-    char[] ret = format.integer(hour, 10);
+    char[] ret = Format.integer(hour, 10);
     ret ~= ":";
     if (minute < 10) {
       ret ~= "0";
     }
-    ret ~= format.integer(minute, 10);
+    ret ~= Format.integer(minute, 10);
     return ret;
   }
 
   char[] formatTime(uint hour, uint minute, uint second) {
-    auto format = new Format;
-
-    char[] ret = format.integer(hour, 10);
+    char[] ret = Format.integer(hour, 10);
     ret ~= ":";
     if (minute < 10) {
       ret ~= "0";
     }
-    ret ~= format.integer(minute, 10);
+    ret ~= Format.integer(minute, 10);
     ret ~= ":";
     if (second < 10) {
       ret ~= "0";
     }
-    ret ~= format.integer(second, 10);
+    ret ~= Format.integer(second, 10);
     return ret;
   }
 
