@@ -188,7 +188,7 @@ public:
   }
 
   static Color Gray() {
-    return new Color(0.3, 0.3, 0.3, 1.0);
+    return new Color(0.7, 0.7, 0.7, 1.0);
   }
 
   static Color White() {
@@ -220,7 +220,7 @@ public:
   }
 
   static Color DarkGray() {
-    return new Color(0.7, 0.7, 0.7, 1.0);
+    return new Color(0.3, 0.3, 0.3, 1.0);
   }
 
   static Color Black() {
