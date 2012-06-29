@@ -7,7 +7,7 @@ import drawing.color;
 version(Windows) {
 }
 else version(linux) {
-  extern(C) int printf(char* format, ...);
+  import binding.c;
 }
 else {
   static assert(false, "I do not know how to compile the Console class.");
@@ -156,15 +156,15 @@ public:
     return _stream;
   }
 
-  Color foregroundColor() {
+  Color forecolor() {
     return _fg;
   }
 
-  Color backgroundColor() {
+  Color backcolor() {
     return _bg;
   }
 
-  void foregroundColor(Color value) {
+  void forecolor(Color value) {
     _fg = value;
 
     version(linux) {
@@ -183,7 +183,7 @@ public:
     }
   }
 
-  void backgroundColor(Color value) {
+  void backcolor(Color value) {
     _bg = value;
 
     version(linux) {
