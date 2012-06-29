@@ -164,31 +164,31 @@ public:
   }
 
   static Color Red() {
-    return new Color(1.0, 0.0, 0.0, 1.0);
+    return new Color(0.8, 0.3, 0.3, 1.0);
   }
 
   static Color Green() {
-    return new Color(0.0, 1.0, 0.0, 1.0);
+    return new Color(0.3, 0.8, 0.3, 1.0);
   }
 
   static Color Blue() {
-    return new Color(0.0, 0.0, 1.0, 1.0);
+    return new Color(0.3, 0.3, 0.8, 1.0);
   }
 
   static Color Yellow() {
-    return new Color(1.0, 1.0, 0.0, 1.0);
+    return new Color(0.8, 0.8, 0.3, 1.0);
   }
 
   static Color Magenta() {
-    return new Color(1.0, 0.0, 1.0, 1.0);
+    return new Color(0.8, 0.3, 0.8, 1.0);
   }
 
   static Color Cyan() {
-    return new Color(0.0, 1.0, 1.0, 1.0);
+    return new Color(0.3, 0.8, 0.3, 1.0);
   }
 
   static Color Gray() {
-    return new Color(0.7, 0.7, 0.7, 1.0);
+    return new Color(0.8, 0.8, 0.8, 1.0);
   }
 
   static Color White() {
@@ -221,6 +221,42 @@ public:
 
   static Color DarkGray() {
     return new Color(0.3, 0.3, 0.3, 1.0);
+  }
+
+  static Color DarkestGray() {
+    return new Color(0.1, 0.1, 0.1, 1.0);
+  }
+
+  static Color LightestGray() {
+    return new Color(0.9, 0.9, 0.9, 1.0);
+  }
+
+  static Color LightRed() {
+    return new Color(1.0, 0.0, 0.0, 1.0);
+  }
+
+  static Color LightGreen() {
+    return new Color(0.0, 1.0, 0.0, 1.0);
+  }
+
+  static Color LightBlue() {
+    return new Color(0.0, 0.0, 1.0, 1.0);
+  }
+
+  static Color LightYellow() {
+    return new Color(1.0, 1.0, 0.0, 1.0);
+  }
+
+  static Color LightMagenta() {
+    return new Color(1.0, 0.0, 1.0, 1.0);
+  }
+
+  static Color LightCyan() {
+    return new Color(0.0, 1.0, 1.0, 1.0);
+  }
+
+  static Color LightGray() {
+    return new Color(0.7, 0.7, 0.7, 1.0);
   }
 
   static Color Black() {
