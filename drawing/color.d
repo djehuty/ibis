@@ -145,22 +145,37 @@ private:
   }
 
 public:
-  enum Style {
+  enum Space {
     RGBA,
     HSLA
   }
 
   this(double red, double green, double blue, double alpha) {
-    _r = red;
-    _g = green;
-    _b = blue;
-    _a = alpha;
-
-    _rgbValid = true;
-    _hslValid = false;
+    this(Color.Space.RGBA, red, green, blue, alpha);
   }
 
-  this(Color.Style, double a, double b, double c, double d) {
+  this(Color.Space space, double a, double b, double c, double d) {
+    switch (space) {
+      default:
+      case Space.RGBA:
+        _r = a;
+        _g = b;
+        _b = c;
+        _a = d;
+
+        _rgbValid = true;
+        _hslValid = false;
+        break;
+      case Space.HSLA:
+        _h = a;
+        _s = b;
+        _l = c;
+        _a = d;
+
+        _hslValid = true;
+        _rgbValid = false;
+        break;
+    }
   }
 
   static Color Red() {
@@ -305,5 +320,9 @@ public:
       _calculateFromRGB();
     }
     return _l;
+  }
+
+  double alpha() {
+    return _a;
   }
 }
