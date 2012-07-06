@@ -174,6 +174,45 @@ private:
     return str[str.length-find.length..str.length] == find;
   }
 
+  static char[] _charAt(char[] string, long index) {
+    uint[] _indices = Unicode.calcIndices(string);
+
+    long start, end;
+
+    if (_indices.length > index) {
+      start = _indices[index];
+    }
+    else {
+      return null;
+    }
+
+    if (_indices.length > index + 1) {
+      end = _indices[index + 1];
+    }
+    else {
+      end = string.length;
+    }
+
+    return string[start..end];
+  }
+
+  static char[] _insertAt(char[] string, char[] addition, long index) {
+    uint[] _indices = Unicode.calcIndices(string);
+
+    int pos;
+    if (_indices.length > index) {
+      pos = _indices[index];
+    }
+    else if (index == _indices.length) {
+      pos = string.length;
+    }
+    else {
+      return null;
+    }
+
+    return string[0..pos] ~ addition ~ string[pos..$];
+  }
+
 public:
   this() {
     _string = "";
@@ -245,5 +284,21 @@ public:
 
   static bool endsWith(char[] string, char[] search) {
     return _endsWith(string, search);
+  }
+
+  char[] charAt(long index) {
+    return _charAt(_string, index);
+  }
+
+  static char[] charAt(char[] string, long index) {
+    return _charAt(string, index);
+  }
+
+  char[] insertAt(char[] addition, long index) {
+    return _insertAt(_string, addition, index);
+  }
+
+  static char[] insertAt(char[] string, char[] addition, long index) {
+    return _insertAt(string, addition, index);
   }
 }
