@@ -14,6 +14,7 @@ private:
     Init,
 
     Invalid,
+    Required,
 
     ReadHeaders,
     ReadBitmapSize,
@@ -122,6 +123,7 @@ private:
   ulong _bytesLeft;
 
   ulong _y;
+  ulong _x;
 
   // RLE info
   int   _absoluteCount;
@@ -130,6 +132,7 @@ private:
   // State Machine Status
   State _state;
   State _nextState;
+  State _currentState;
 
   // Cpu information
   Cpu   _cpu;
@@ -156,6 +159,9 @@ private:
 
     if (_input.available < 4) {
       // Required
+      _currentState = _state;
+      _state = State.Required;
+      return;
     }
 
     _input.read(ptr[0..4]);
@@ -181,6 +187,9 @@ private:
   void _readWindowsInfo() {
     if (_input.available < 36) {
       // Required
+      _currentState = _state;
+      _state = State.Required;
+      return;
     }
 
     ubyte* ptr = cast(ubyte*)&_infoHeader;
@@ -198,6 +207,9 @@ private:
     if (offset > 0) {
       if (_input.available < offset) {
         // Required
+        _currentState = _state;
+        _state = State.Required;
+        return;
       }
 
       _input.seek(offset);
@@ -251,6 +263,9 @@ private:
 
     if (_input.available < sizeOfPalette) {
       // Required
+      _currentState = _state;
+      _state = State.Required;
+      return;
     }
 
     ubyte* ptr = cast(ubyte*)_palette.ptr;
@@ -267,6 +282,9 @@ private:
     if (_infoHeader.biCompression == 3) {
       if (_input.available < _bitfields.sizeof) {
         // Required
+        _currentState = _state;
+        _state = State.Required;
+        return;
       }
 
       _input.read((cast(ubyte*)_bitfields.ptr)[0.._bitfields.sizeof]);
@@ -359,7 +377,8 @@ private:
 
     if (_input.available < _bytesPerRow) {
       // Required
-      _state = State.Invalid;
+      _currentState = _state;
+      _state = State.Required;
       return;
     }
 
@@ -409,7 +428,8 @@ private:
 
     if (_input.available < _bytesPerRow) {
       // Required
-      _state = State.Invalid;
+      _currentState = _state;
+      _state = State.Required;
       return;
     }
 
@@ -569,7 +589,8 @@ private:
 
     if (_input.available < _bytesPerRow) {
       // Required
-      _state = State.Invalid;
+      _currentState = _state;
+      _state = State.Required;
       return;
     }
 
@@ -625,7 +646,8 @@ private:
 
     if (_input.available < _bytesPerRow) {
       // Required
-      _state = State.Invalid;
+      _currentState = _state;
+      _state = State.Required;
       return;
     }
 
@@ -745,7 +767,8 @@ private:
 
     if (_input.available < _bytesPerRow) {
       // Required
-      _state = State.Invalid;
+      _currentState = _state;
+      _state = State.Required;
       return;
     }
 
@@ -799,12 +822,15 @@ private:
 
     if (_input.available < _bytesPerRow) {
       // Required
-      _state = State.Invalid;
+      _currentState = _state;
+      _state = State.Required;
       return;
     }
 
     ubyte[] fuh = new ubyte[_bytesPerRow];
     _input.read(fuh);
+
+    pixelmap.reposition(0, _infoHeader.biHeight - _y - 1);
 
     for (size_t idx = 0; idx < _infoHeader.biWidth; idx++) {
       uint red   = fuh[(idx * 3) + 2];
@@ -813,8 +839,9 @@ private:
 
       uint clr = red | (green << 8) | (blue << 16) | 0xff000000;
       pixelmap.writeRGBA(clr);
-
     }
+
+    _y++;
   }
 
   void _decodeWin32bpp() {
@@ -834,14 +861,17 @@ private:
 
     if (available == 0) {
       // Required
-      _state = State.Invalid;
+      _currentState = _state;
+      _state = State.Required;
       return;
     }
 
-    pixelmap.reposition(0, _infoHeader.biHeight - _y - 1);
-
     uint[] fileData = new uint[available];
     _input.read(cast(ubyte[])fileData);
+
+    if (_x == 0 && _y == 0) {
+      pixelmap.reposition(0, _infoHeader.biHeight - _y - 1);
+    }
 
     foreach(color; fileData) {
       uint red   = (color & _bitfields[0]) >> _bitfieldShifts[0];
@@ -850,9 +880,13 @@ private:
 
       uint clr = red | (green << 8) | (blue << 16) | 0xff000000;
       pixelmap.writeRGBA(clr | 0xff000000);
+      _x++;
+      if (_x == width()) {
+        _x = 0;
+        _y++;
+        pixelmap.reposition(0, _infoHeader.biHeight - _y - 1);
+      }
     }
-
-    _y++;
   }
 
 public:
@@ -871,7 +905,6 @@ public:
   ImageDecoder.State decode(Pixelmap pixelmap) {
     _cpu = Architecture.currentCpu;
 
-    ImageDecoder.State ret = ImageDecoder.State.Invalid;
     bool hasMultipleFrames;
 
     for(;;) {
@@ -997,6 +1030,15 @@ public:
 
           _renderWin32bpp(pixelmap);
           break;
+
+        case State.Required:
+          _state = _currentState;
+
+          if (_state <= State.ReadWin) {
+            return ImageDecoder.State.Insufficient;
+          }
+
+          return ImageDecoder.State.Accepted;
 
         default:
         case State.Invalid:
