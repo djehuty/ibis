@@ -106,7 +106,8 @@ private:
     return null;
   }
 
-  void _readInto(ubyte[] buffer) {
+  bool _readInto(ubyte[] buffer) {
+    return false;
   }
 
   size_t _zero() {
@@ -169,17 +170,7 @@ public:
 
     version(linux) {
       int fgidx = _toNearestConsoleColor(value);
-      if (fgidx < 16) {
-        int bright = 0;
-        if (fgidx > 7) {
-          fgidx %= 8;
-          bright = 1;
-        }
-        printf("\x1B[%d;%dm\0".ptr, bright, 30 + fgidx);
-      }
-      else {
-        printf("\x1B[38;5;%dm\0".ptr, fgidx);
-      }
+      printf("\x1B[38;5;%dm\0".ptr, fgidx);
     }
   }
 
@@ -188,13 +179,7 @@ public:
 
     version(linux) {
       int bgidx = _toNearestConsoleColor(value);
-      if (bgidx < 16) {
-        bgidx %= 8;
-        printf("\x1B[%dm\0".ptr, 40 + bgidx);
-      }
-      else {
-        printf("\x1B[48;5;%dm\0".ptr, bgidx);
-      }
+      printf("\x1B[48;5;%dm\0".ptr, bgidx);
     }
   }
 
