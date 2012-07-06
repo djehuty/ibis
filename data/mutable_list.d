@@ -71,6 +71,7 @@ public:
     for(size_t i = atIndex; i < _count - 1; i++) {
       _data[i] = _data[i+1];
     }
+    _count--;
     return ret;
   }
 
