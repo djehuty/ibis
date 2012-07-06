@@ -2,6 +2,8 @@ module io.buffer;
 
 import io.stream;
 
+import binding.c;
+
 class Buffer {
 private:
   static const size_t INITIAL_SIZE = 128;
@@ -26,7 +28,9 @@ private:
   }
 
   ubyte[] _read(size_t length) {
-    if (_pos + length > _data.length) {
+    size_t end = _pos + length;
+
+    if (end > _data.length) {
       throw new Exception("OutOfBounds");
     }
 
@@ -34,7 +38,8 @@ private:
       return [];
     }
 
-    auto ret = _data[_pos.._pos+length];
+    auto ret = _data[_pos .. end];
+
     _pos += length;
     return ret;
   }
@@ -92,6 +97,7 @@ public:
   this(size_t size, ubyte value) {
     _space = new ubyte[size];
     _data = _space;
+    _data[0..$] = value;
     _initStreams();
   }
 
@@ -128,8 +134,8 @@ public:
       _resize(_data.length + data.length);
     }
 
-    _space[_data.length.._data.length+data.length] = data;
-    _data = _space[0.._data.length+data.length];
+    _space[_data.length .. _data.length + data.length] = data;
+    _data = _space[0 .. _data.length + data.length];
   }
 
   void append(Stream data, size_t length) {
@@ -137,14 +143,15 @@ public:
   }
 
   void write(ubyte[] data) {
-    if (_space.length < _pos + data.length) {
-      _resize(_pos + data.length);
+    size_t necessaryLength = _pos + data.length;
+    if (_space.length < necessaryLength) {
+      _resize(necessaryLength);
     }
 
-    _space[_pos.._pos+data.length] = data;
+    _space[_pos .. necessaryLength] = data;
 
-    if (_pos + data.length > _data.length) {
-      _data = _space[0.._pos+data.length];
+    if (necessaryLength > _data.length) {
+      _data = _space[0 .. necessaryLength];
     }
 
     _pos += data.length;
@@ -172,16 +179,18 @@ public:
   }
 
   void seek(long position) {
+    long newPos = cast(long)_pos + position;
+
     if (position < 0) {
       if ((cast(size_t)(-position)) > _pos) {
         _pos = 0;
         return;
       }
     }
-    else if (position + _pos > _data.length) {
+    else if (newPos > _data.length) {
       _pos = _data.length;
       return;
     }
-    _pos += position;
+    _pos = newPos;
   }
 }
