@@ -278,6 +278,10 @@ public:
     return new Color(0.0, 0.0, 0.0, 1.0);
   }
 
+  static Color Clear() {
+    return new Color(0.0, 0.0, 0.0, 0.0);
+  }
+
   // Properties //
 
   double red() {
