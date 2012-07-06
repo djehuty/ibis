@@ -166,14 +166,14 @@ public:
   }
 
   char[] language() {
-    return "fran\u00e7ais";
+    return "español";
   }
 
   char[] country() {
-    return "france";
+    return "españa";
   }
   
   char[] code() {
-    return "fraFR";
+    return "spaES";
   }
 }
