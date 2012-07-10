@@ -15,14 +15,24 @@ private:
   ubyte[] _space;
   ubyte[] _data;
   size_t _pos;
-  
+
   void _resize(size_t length) {
-    ubyte[] reallocated = new ubyte[length];
-    if (length < _space.length) {
-      reallocated[0..length] = _space[0..length];
+    size_t newSize = _space.length * 2;
+
+    while (length > newSize) {
+      newSize *= 2;
+    }
+
+    _resizeToLength(newSize);
+  }
+  
+  void _resizeToLength(size_t newLength) {
+    ubyte[] reallocated = new ubyte[newLength];
+    if (newLength < _space.length) {
+      reallocated[0 .. newLength] = _space[0 .. newLength];
     }
     else {
-      reallocated[0.._space.length] = _space[0.._space.length];
+      reallocated[0 .. _space.length] = _space[0 .. $];
     }
     _space = reallocated;
   }
@@ -79,6 +89,7 @@ private:
     _input.available  = &available;
     _input.length     = &length;
     _input.position   = &position;
+    _input.seek       = &seek;
   }
 
 public:
