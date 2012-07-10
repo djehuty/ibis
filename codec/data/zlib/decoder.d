@@ -91,6 +91,10 @@ private:
       _state = State.Required;
       return;
     }
+    else if (deflateState == DataDecoder.State.Invalid) {
+      _state = State.Invalid;
+      return;
+    }
 
     _state = State.ReadAlder32;
   }

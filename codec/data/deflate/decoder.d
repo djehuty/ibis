@@ -236,8 +236,8 @@ private:
   HuffmanTable _deflateCodeLengthTable;
 
   // The minimum code size for a code length code
-  ushort _deflateCodeLengthCodeSize = 1;
-  ushort _deflateDistanceCodeLengthCodeSize = 1;
+  ushort _deflateCodeLengthCodeSize;
+  ushort _deflateDistanceCodeLengthCodeSize;
 
   // Huffman table for actual codes
   ubyte[288]  _deflateHuffmanLengths;
@@ -264,7 +264,48 @@ private:
 
   Cpu _cpu;
 
+  bool _duplicateFromEnd(Stream output, ulong distanceBehind, uint amount) {
+    if (amount == 0) {
+      return false;
+    }
+
+    if (distanceBehind > output.length) {
+      return false;
+    }
+
+    long pos = output.position;
+    output.seek(output.available);
+    output.seek(-cast(int)distanceBehind);
+
+    if (distanceBehind < amount) {
+      ubyte[] bytes = output.read(distanceBehind);
+
+      while (distanceBehind < amount) {
+        output.append(bytes);
+        amount -= distanceBehind;
+      }
+
+      if (amount > 0) {
+        output.append(bytes[0..amount]);
+      }
+    }
+    else {
+      ubyte[] bytes = output.read(amount);
+
+      output.append(bytes);
+    }
+
+    output.seek(output.available);
+    output.seek(-output.length);
+    output.seek(pos);
+
+    return true;
+  }
+
   void _init() {
+    _deflateCodeLengthCodeSize = 1;
+    _deflateDistanceCodeLengthCodeSize = 1;
+
     _deflateCurValue    = 0;
     _deflateCurValueBit = 0;
 
@@ -560,6 +601,8 @@ private:
             _deflateLastState = State.DeflateFixedGetDistance;
           }
         }
+
+        break;
       }
     }
 
@@ -595,7 +638,7 @@ private:
     _deflateLastState = State.DeflateFixedGetDistance;
   }
 
-  void _deflateFixedGetDistance() {
+  void _deflateFixedGetDistance(Stream output) {
     auto distanceTable = _globalDeflateDistanceTable[_deflateCurValue];
 
     _deflateDistance = distanceTable.base;
@@ -624,11 +667,11 @@ private:
       _state = State.ReadBitsRev;
       _deflateLastState = State.DeflateFixedCheckCode;
 
-      // TODO: Duplicate from end code
+      _duplicateFromEnd(output, _deflateDistance, _deflateLength);
     }
   }
 
-  void _deflateFixedGetDistanceEx() {
+  void _deflateFixedGetDistanceEx(Stream output) {
     _deflateDistance += _deflateCurValue;
 
     // Add to the data stream by using interpret state
@@ -645,6 +688,7 @@ private:
     _deflateLastState = State.DeflateFixedCheckCode;
 
     // TODO: Duplicate from end code
+    _duplicateFromEnd(output, _deflateDistance, _deflateLength);
   }
 
   void _deflateDynamicCompression() {
@@ -684,6 +728,10 @@ private:
   }
 
   void _deflateDynamicHCLEN() {
+    // Get (HCLEN + 4) number of 3 bit values.
+    // These correspond to the code lengths for the code length alphabet.
+    // Holy freaking confusing!!!
+
     _deflateHCLEN = cast(ushort)_deflateCurValue;
 
     _deflateCounterMax = _deflateHCLEN + 4;
@@ -703,7 +751,7 @@ private:
       = cast(ubyte)_deflateCurValue;
 
     if (_deflateCurValue != 0) {
-      _deflateCodeLengthCount[_deflateCurValue]++;
+      _deflateCodeLengthCount[_deflateCurValue - 1]++;
     }
 
     _deflateHuffmanLengthCounts[_deflateCurValue]++;
@@ -731,8 +779,6 @@ private:
       // Build Code Length Tree
 
       uint pos, pos_exp, filled;
-
-      _deflateCounter = 0;
 
       _deflateHuffmanNextCodes[0] = 0;
 
@@ -1043,8 +1089,6 @@ private:
     }
 
     // Build Code Length Tree
-    uint pos, pos_exp, filled;
-
     _deflateHuffmanNextCodes[0] = 0;
 
     for (size_t p = 1; p < 16; p++) {
@@ -1053,17 +1097,17 @@ private:
                         _deflateHuffmanLengthCounts[p - 1]) * 2);
     }
 
-    pos = 0;
-    filled = 0;
+    uint pos = 0;
+    uint filled = 0;
 
     for (size_t i = 0; i < 288; i++) {
       uint curentry = _deflateHuffmanNextCodes[_deflateHuffmanLengths[i]]++;
 
       // Go through every bit
-      for (size_t o = 0; i < _deflateHuffmanLengths[i]; o++) {
+      for (size_t o = 0; o < _deflateHuffmanLengths[i]; o++) {
         ubyte bit = cast(ubyte)((curentry >> (_deflateHuffmanLengths[i] - o - 1)) & 1);
 
-        pos_exp = (2 * pos) + bit;
+        uint pos_exp = (2 * pos) + bit;
 
         if ((o + 1) > (288 - 2)) {
           // Error. Tree is mishaped.
@@ -1072,7 +1116,7 @@ private:
         }
         else if (_deflateHuffmanTable[pos_exp] == 0xffff) {
           // Is this the last bit?
-          if (o + 1 == _deflateHuffmanLengths[i]) {
+          if ((o + 1) == _deflateHuffmanLengths[i]) {
             // Output the code
             _deflateHuffmanTable[pos_exp] = cast(ushort)i;
 
@@ -1096,7 +1140,7 @@ private:
     for (size_t p = 1; p < 16; p++) {
       _deflateHuffmanNextCodes[p]
         = cast(ushort)((_deflateHuffmanNextCodes[p - 1] +
-                        _deflateHuffmanLengthCounts[p - 1]) * 2);
+                        _deflateDistanceLengthCounts[p - 1]) * 2);
     }
 
     pos = 0;
@@ -1106,10 +1150,10 @@ private:
       uint curentry = _deflateHuffmanNextCodes[_deflateDistanceLengths[i]]++;
 
       // Go through every bit
-      for (size_t o = 0; i < _deflateDistanceLengths[i]; o++) {
+      for (size_t o = 0; o < _deflateDistanceLengths[i]; o++) {
         ubyte bit = cast(ubyte)((curentry >> (_deflateDistanceLengths[i] - o - 1)) & 1);
 
-        pos_exp = (2 * pos) + bit;
+        uint pos_exp = (2 * pos) + bit;
 
         if ((o + 1) > (32 - 2)) {
           // Error. Tree is mishaped.
@@ -1118,7 +1162,7 @@ private:
         }
         else if (_deflateDistanceTable[pos_exp] == 0xffff) {
           // Is this the last bit?
-          if (o + 1 == _deflateDistanceLengths[i]) {
+          if ((o + 1) == _deflateDistanceLengths[i]) {
             // Output the code
             _deflateDistanceTable[pos_exp] = cast(ushort)i;
 
@@ -1132,7 +1176,7 @@ private:
           }
         }
         else {
-          pos = _deflateHuffmanTable[pos_exp] - 32;
+          pos = _deflateDistanceTable[pos_exp] - 32;
         }
       }
     }
@@ -1251,7 +1295,7 @@ private:
   // Ensure that it is within the huffman tree.
   // Then we can read the extra bits...
   // If not, then we can read another bit
-  void _deflateDynamicGetDistance() {
+  void _deflateDynamicGetDistance(Stream output) {
     // Get bit
     if (_deflateCurMask == 0) {
       _state = State.ReadByte;
@@ -1301,13 +1345,14 @@ private:
         // Return to get another code
 
         // TODO: duplicate from end
+        _duplicateFromEnd(output, _deflateDistance, _deflateLength);
 
         _state = State.DeflateDynamicDecoder;
       }
     }
   }
 
-  void _deflateDynamicGetDistEx() {
+  void _deflateDynamicGetDistEx(Stream output) {
     _deflateDistance += _deflateCurValue;
 
     _deflateCurValue = 0;
@@ -1315,7 +1360,7 @@ private:
 
     _deflateBitsLeft = _deflateCodeLengthCodeSize;
 
-    // TODO : duplicate from end
+    _duplicateFromEnd(output, _deflateDistance, _deflateLength);
 
     _state = State.DeflateDynamicDecoder;
   }
@@ -1391,11 +1436,19 @@ public:
           break;
 
         case State.DeflateFixedGetDistance:
-          _deflateFixedGetDistance();
+          if (output is null) {
+            return DataDecoder.State.StreamRequired;
+          }
+
+          _deflateFixedGetDistance(output);
           break;
 
         case State.DeflateFixedGetDistanceEx:
-          _deflateFixedGetDistanceEx();
+          if (output is null) {
+            return DataDecoder.State.StreamRequired;
+          }
+
+          _deflateFixedGetDistanceEx(output);
           break;
 
         case State.DeflateDynamicCompression:
@@ -1451,11 +1504,19 @@ public:
           break;
 
         case State.DeflateDynamicGetDistance:
-          _deflateDynamicGetDistance();
+          if (output is null) {
+            return DataDecoder.State.StreamRequired;
+          }
+
+          _deflateDynamicGetDistance(output);
           break;
 
         case State.DeflateDynamicGetDistEx:
-          _deflateDynamicGetDistEx();
+          if (output is null) {
+            return DataDecoder.State.StreamRequired;
+          }
+
+          _deflateDynamicGetDistEx(output);
           break;
 
         case State.Required:
