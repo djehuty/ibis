@@ -5,8 +5,6 @@ import io.buffer;
 
 import drawing.color;
 
-import binding.c;
-
 final class Pixelmap {
 public:
   enum Type {
@@ -129,7 +127,7 @@ public:
     write(new Color(Color.Space.HSLA, hue, saturation, luminance, alpha));
   }
 
-  void writeRGBA(uint color) {
+  void writeR8G8B8A8(uint color) {
     switch (_type) {
       case Type.R8G8B8A8:
         ubyte[] clr = (cast(ubyte*)&color)[0..4];
@@ -153,7 +151,7 @@ public:
     }
   }
 
-  void writeBGRA(uint color) {
+  void writeB8G8R8A8(uint color) {
     switch (_type) {
       case Type.B8G8R8A8:
         ubyte[] clr = (cast(ubyte*)&color)[0..4];
@@ -174,6 +172,54 @@ public:
         double alpha = cast(double)((color >> 24) & 0xff) / cast(double)0xff;
 
         writeRGBA(red, green, blue, alpha);
+    }
+  }
+
+  void writeR16G16B16A16(ulong color) {
+    switch (_type) {
+      case Type.R16G16B16A16:
+        ubyte[] clr = (cast(ubyte*)&color)[0..8];
+        _buffer.write(clr);
+        _advance();
+        break;
+
+      case Type.R16G16B16:
+        ubyte[] clr = (cast(ubyte*)&color)[0..6];
+        _buffer.write(clr);
+        _advance();
+        break;
+
+      default:
+        double r = cast(double)((color >>  0) & 0xffff) / cast(double)0xffff;
+        double g = cast(double)((color >> 16) & 0xffff) / cast(double)0xffff;
+        double b = cast(double)((color >> 32) & 0xffff) / cast(double)0xffff;
+        double a = cast(double)((color >> 48) & 0xffff) / cast(double)0xffff;
+
+        writeRGBA(r, g, b, a);
+    }
+  }
+
+  void writeB16G16R16A16(ulong color) {
+    switch (_type) {
+      case Type.B16G16R16A16:
+        ubyte[] clr = (cast(ubyte*)&color)[0..8];
+        _buffer.write(clr);
+        _advance();
+        break;
+
+      case Type.B16G16R16:
+        ubyte[] clr = (cast(ubyte*)&color)[0..6];
+        _buffer.write(clr);
+        _advance();
+        break;
+
+      default:
+        double b = cast(double)((color >>  0) & 0xffff) / cast(double)0xffff;
+        double g = cast(double)((color >> 16) & 0xffff) / cast(double)0xffff;
+        double r = cast(double)((color >> 32) & 0xffff) / cast(double)0xffff;
+        double a = cast(double)((color >> 48) & 0xffff) / cast(double)0xffff;
+
+        writeRGBA(r, g, b, a);
     }
   }
 

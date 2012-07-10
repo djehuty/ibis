@@ -399,7 +399,7 @@ private:
         uint green = (clr & 0xff00) >> 8;
         uint blue  = (clr & 0xff) >> 0;
 
-        pixelmap.writeRGBA(clr);
+        pixelmap.writeR8G8B8A8(clr);
 
         numPixels++;
       }
@@ -450,7 +450,7 @@ private:
         uint green = (clr & 0xff00) >> 8;
         uint blue  = (clr & 0xff) >> 0;
 
-        pixelmap.writeRGBA(clr);
+        pixelmap.writeR8G8B8A8(clr);
 
         numPixels++;
       }
@@ -520,11 +520,11 @@ private:
         clr[0] = _palette[clr[0]];
         clr[1] = _palette[clr[1]];
 
-        pixelmap.writeRGBA(clr[0]);
+        pixelmap.writeR8G8B8A8(clr[0]);
         _absoluteCount--;
 
         if (_absoluteCount > 0) {
-          pixelmap.writeRGBA(clr[1]);
+          pixelmap.writeR8G8B8A8(clr[1]);
           _absoluteCount--;
         }
 
@@ -535,12 +535,12 @@ private:
           clr[0] = _palette[clr[0]];
           clr[1] = _palette[clr[1]];
 
-          pixelmap.writeRGBA(clr[0]);
+          pixelmap.writeR8G8B8A8(clr[0]);
           _absoluteCount--;
         }
 
         if (_absoluteCount > 0) {
-          pixelmap.writeRGBA(clr[1]);
+          pixelmap.writeR8G8B8A8(clr[1]);
           _absoluteCount--;
         }
       }
@@ -574,10 +574,10 @@ private:
         clr[1] = _palette[clr[1]];
 
         for (int j = 0; j < count; j += 2) {
-          pixelmap.writeRGBA(clr[0]);
+          pixelmap.writeR8G8B8A8(clr[0]);
 
           if (j + 1 < count) {
-            pixelmap.writeRGBA(clr[1]);
+            pixelmap.writeR8G8B8A8(clr[1]);
           }
         }
       }
@@ -608,7 +608,7 @@ private:
         }
 
         clr = _palette[clr];
-        pixelmap.writeRGBA(clr);
+        pixelmap.writeR8G8B8A8(clr);
 
         numPixels++;
       }
@@ -663,7 +663,7 @@ private:
       }
 
       uint clr = _palette[color];
-      pixelmap.writeRGBA(clr);
+      pixelmap.writeR8G8B8A8(clr);
 
       numPixels++;
     }
@@ -707,12 +707,12 @@ private:
       }
       else if (_absoluteCount > 0) {
         uint clr = _palette[count];
-        pixelmap.writeRGBA(clr);
+        pixelmap.writeR8G8B8A8(clr);
         _absoluteCount--;
 
         if (_absoluteCount > 0) {
           clr = _palette[color];
-          pixelmap.writeRGBA(clr);
+          pixelmap.writeR8G8B8A8(clr);
           _absoluteCount--;
         }
       }
@@ -739,7 +739,7 @@ private:
       else {
         uint clr = _palette[color];
         for (int j = 0; j < count; j++) {
-          pixelmap.writeRGBA(clr);
+          pixelmap.writeR8G8B8A8(clr);
         }
       }
     }
@@ -792,7 +792,7 @@ private:
       blue  <<= 8 - _bitfieldSizes[2];
 
       uint clr = red | (green << 8) | (blue << 16) | 0xff000000;
-      pixelmap.writeRGBA(clr);
+      pixelmap.writeR8G8B8A8(clr);
 
       numPixels++;
     }
@@ -838,7 +838,7 @@ private:
       uint blue  = fuh[(idx * 3) + 0];
 
       uint clr = red | (green << 8) | (blue << 16) | 0xff000000;
-      pixelmap.writeRGBA(clr);
+      pixelmap.writeR8G8B8A8(clr);
     }
 
     _y++;
@@ -879,7 +879,7 @@ private:
       uint blue  = (color & _bitfields[2]) >> _bitfieldShifts[2];
 
       uint clr = red | (green << 8) | (blue << 16) | 0xff000000;
-      pixelmap.writeRGBA(clr | 0xff000000);
+      pixelmap.writeR8G8B8A8(clr | 0xff000000);
       _x++;
       if (_x == width()) {
         _x = 0;
