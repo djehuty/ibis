@@ -11,6 +11,8 @@ import io.stream;
 import io.buffer;
 import io.pixelmap;
 
+import math.round;
+
 import system.architecture;
 import system.cpu;
 
@@ -174,6 +176,7 @@ private:
   // Decoder state
   State _filterState;
 
+	static const uint _interlaceIncrementsX[7] = [8, 8, 4, 4, 2, 2, 1];
   static const uint _interlaceIncrementsY[7] = [8, 8, 8, 4, 4, 2, 2];
 
   static const uint _interlaceStartsX[7]     = [0, 4, 0, 2, 0, 1, 0];
@@ -368,6 +371,11 @@ private:
       return;
     }
 
+    if (_IHDR.interlaceMethod > 1) {
+      _state = State.Invalid;
+      return;
+    }
+
     if (_IHDR.interlaceMethod > 0) {
       // Set up interlace pass dimensions
       printf("interlacing\n");
@@ -500,16 +508,42 @@ private:
     // 6th pass: ceiling(height / 2)
     // 7th pass: ceiling((height - 1) / 2)
 
-    // TODO: ceiling
+    double intermediate;
     for (size_t i = 0; i < 3; i++) {
-      _interlaceWidths[(i * 2)]     = cast(uint)(cast(float)(_IHDR.width)            / (8 >> i));
-      _interlaceWidths[(i * 2) + 1] = cast(uint)(cast(float)(_IHDR.width - (4 >> i)) / (8 >> i));
+      intermediate = (cast(double)_IHDR.width) / (8 >> i);
+      if (intermediate < 0) {
+        _interlaceWidths[(i * 2)] = 0;
+      }
+      else {
+        _interlaceWidths[(i * 2)] = cast(uint)Round.ceiling(intermediate);
+      }
+
+      intermediate = (cast(double)_IHDR.width - (4 >> i)) / (8 >> i);
+      if (intermediate < 0) {
+        _interlaceWidths[(i * 2) + 1] = 0;
+      }
+      else {
+        _interlaceWidths[(i * 2) + 1] = cast(uint)Round.ceiling(intermediate);
+      }
     }
     _interlaceWidths[6] = _IHDR.width;
 
     for (size_t i = 0; i < 3; i++) {
-      _interlaceHeights[(i * 2) + 1] = cast(uint)(cast(float)(_IHDR.height)            / (8 >> i));
-      _interlaceHeights[(i * 2) + 2] = cast(uint)(cast(float)(_IHDR.height - (4 >> i)) / (8 >> i));
+      intermediate = (cast(double)_IHDR.height) / (8 >> i);
+      if (intermediate < 0) {
+        _interlaceHeights[(i * 2) + 1] = 0;
+      }
+      else {
+        _interlaceHeights[(i * 2) + 1] = cast(uint)Round.ceiling(intermediate);
+      }
+
+      intermediate = (cast(double)_IHDR.height - (4 >> i)) / (8 >> i);
+      if (intermediate < 0) {
+        _interlaceHeights[(i * 2) + 2] = 0;
+      }
+      else {
+        _interlaceHeights[(i * 2) + 2] = cast(uint)Round.ceiling(intermediate);
+      }
     }
     _interlaceHeights[0] = _interlaceHeights[1];
   }
@@ -533,7 +567,6 @@ private:
     if (_paletteCount > 256) {
       // Too many entries
 
-      printf("whoa\n");
       _state = State.Invalid;
       return;
     }
@@ -661,20 +694,24 @@ private:
 
       // Reset the prior scanline array
       for (size_t i = 0; i < 8; i++) {
-        _bytes[i][0.._expectedBytes] = 0;
+        _bytes[i][0 .. _expectedBytes] = 0;
       }
 
       do {
         _interlacePass++;
-      } while ((_interlacePass < 7) && (_interlaceWidths[_interlacePass] == 0));
+      } while ((_interlacePass < 7) && (_interlaceWidths[_interlacePass] == 0 || _interlaceHeights[_interlacePass] == 0));
 
-      _y = _interlaceStartsY[_interlacePass];
+      if (_interlacePass < 7) {
+        _y = _interlaceStartsY[_interlacePass];
+      }
     }
     else {
       _y += _interlaceIncrementsY[_interlacePass];
     }
 
-    _x = _interlaceStartsX[_interlacePass];
+    if (_interlacePass < 7) {
+      _x = _interlaceStartsX[_interlacePass];
+    }
   }
 
   void _unfilterNone() {
@@ -687,6 +724,7 @@ private:
         if (_interlacePass >= 7) {
           // Done decoding
           _state = State.Complete;
+          return;
         }
       }
       else {
@@ -735,6 +773,7 @@ private:
         if (_interlacePass >= 7) {
           // Done decoding
           _state = State.Complete;
+          return;
         }
       }
       else {
@@ -784,6 +823,7 @@ private:
         if (_interlacePass >= 7) {
           // Done decoding
           _state = State.Complete;
+          return;
         }
       }
       else {
@@ -832,6 +872,7 @@ private:
         if (_interlacePass >= 7) {
           // Done decoding
           _state = State.Complete;
+          return;
         }
       }
       else {
@@ -886,6 +927,7 @@ private:
         if (_interlacePass >= 7) {
           // Done decoding
           _state = State.Complete;
+          return;
         }
       }
       else {
@@ -992,41 +1034,51 @@ private:
               | (pixel << 16)
               | 0xff000000;
 
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+    }
+
     pixelmap.writeR8G8B8A8(rgba);
-    _x++;
+
+    if (_IHDR.interlaceMethod > 0) {
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      _x++;
+    }
   }
 
   void _renderGrayscale1bpp(Pixelmap pixelmap) {
     _renderGrayscalePixel(pixelmap, _1bpp[(_curComponent[0] >> 7) & 0x1]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _1bpp[(_curComponent[0] >> 6) & 0x1]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _1bpp[(_curComponent[0] >> 5) & 0x1]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _1bpp[(_curComponent[0] >> 4) & 0x1]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _1bpp[(_curComponent[0] >> 3) & 0x1]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _1bpp[(_curComponent[0] >> 2) & 0x1]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _1bpp[(_curComponent[0] >> 1) & 0x1]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _1bpp[(_curComponent[0] >> 0) & 0x1]);
   }
 
   void _renderGrayscale2bpp(Pixelmap pixelmap) {
     _renderGrayscalePixel(pixelmap, _2bpp[(_curComponent[0] >> 6) & 0x3]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _2bpp[(_curComponent[0] >> 4) & 0x3]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _2bpp[(_curComponent[0] >> 2) & 0x3]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _2bpp[(_curComponent[0] >> 0) & 0x3]);
   }
 
   void _renderGrayscale4bpp(Pixelmap pixelmap) {
     _renderGrayscalePixel(pixelmap, _4bpp[(_curComponent[0] >> 4) & 0xf]);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderGrayscalePixel(pixelmap, _4bpp[(_curComponent[0] >> 0) & 0xf]);
   }
 
@@ -1036,8 +1088,15 @@ private:
               | (_curComponent[0] << 16)
               | 0xff000000;
 
-    pixelmap.writeR8G8B8A8(rgba);
-    _x++;
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+      pixelmap.writeR8G8B8A8(rgba);
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      pixelmap.writeR8G8B8A8(rgba);
+      _x++;
+    }
   }
 
   void _renderGrayscale16bpp(Pixelmap pixelmap) {
@@ -1049,8 +1108,15 @@ private:
                | (cast(ulong)_curComponent[1] << 40)
                | 0xffff000000000000;
 
-    pixelmap.writeR16G16B16A16(rgba);
-    _x++;
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+      pixelmap.writeR16G16B16A16(rgba);
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      pixelmap.writeR16G16B16A16(rgba);
+      _x++;
+    }
   }
 
   void _renderTruecolor8bpp(Pixelmap pixelmap) {
@@ -1059,8 +1125,15 @@ private:
               | (_curComponent[2] << 16)
               | 0xff000000;
 
-    pixelmap.writeR8G8B8A8(rgba);
-    _x++;
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+      pixelmap.writeR8G8B8A8(rgba);
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      pixelmap.writeR8G8B8A8(rgba);
+      _x++;
+    }
   }
 
   void _renderTruecolor16bpp(Pixelmap pixelmap) {
@@ -1072,8 +1145,15 @@ private:
                | (cast(ulong)_curComponent[5] << 40)
                | 0xffff000000000000;
 
-    pixelmap.writeR16G16B16A16(rgba);
-    _x++;
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+      pixelmap.writeR16G16B16A16(rgba);
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      pixelmap.writeR16G16B16A16(rgba);
+      _x++;
+    }
   }
 
   void _renderIndexedPixel(Pixelmap pixelmap, ubyte index) {
@@ -1081,41 +1161,51 @@ private:
       index = 0;
     }
 
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+    }
+
     pixelmap.writeR8G8B8A8(_paletteRealized[index]);
-    _x++;
+
+    if (_IHDR.interlaceMethod > 0) {
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      _x++;
+    }
   }
 
   void _renderIndexed1bpp(Pixelmap pixelmap) {
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 7) & 0x1);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 6) & 0x1);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 5) & 0x1);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 4) & 0x1);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 3) & 0x1);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 2) & 0x1);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 1) & 0x1);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 0) & 0x1);
   }
 
   void _renderIndexed2bpp(Pixelmap pixelmap) {
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 6) & 0x3);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 4) & 0x3);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 2) & 0x3);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 0) & 0x3);
   }
 
   void _renderIndexed4bpp(Pixelmap pixelmap) {
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 4) & 0xf);
-    if (_x == _IHDR.width) return;
+    if (_x >= _IHDR.width) return;
     _renderIndexedPixel(pixelmap, (_curComponent[0] >> 0) & 0xf);
   }
 
@@ -1129,8 +1219,15 @@ private:
               | (_curComponent[0] << 16)
               | (_curComponent[1] << 24);
 
-    pixelmap.writeR8G8B8A8(rgba);
-    _x++;
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+      pixelmap.writeR8G8B8A8(rgba);
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      pixelmap.writeR8G8B8A8(rgba);
+      _x++;
+    }
   }
 
   void _renderGrayscaleAlpha16bpp(Pixelmap pixelmap) {
@@ -1143,8 +1240,15 @@ private:
                | (cast(ulong)_curComponent[2] << 48)
                | (cast(ulong)_curComponent[3] << 56);
 
-    pixelmap.writeR16G16B16A16(rgba);
-    _x++;
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+      pixelmap.writeR16G16B16A16(rgba);
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      pixelmap.writeR16G16B16A16(rgba);
+      _x++;
+    }
   }
 
   void _renderTruecolorAlpha8bpp(Pixelmap pixelmap) {
@@ -1153,8 +1257,15 @@ private:
               | (_curComponent[2] << 16)
               | (_curComponent[3] << 24);
 
-    pixelmap.writeR8G8B8A8(rgba);
-    _x++;
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+      pixelmap.writeR8G8B8A8(rgba);
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      pixelmap.writeR8G8B8A8(rgba);
+      _x++;
+    }
   }
 
   void _renderTruecolorAlpha16bpp(Pixelmap pixelmap) {
@@ -1167,8 +1278,15 @@ private:
                | (cast(ulong)_curComponent[6] << 48)
                | (cast(ulong)_curComponent[7] << 56);
 
-    pixelmap.writeR16G16B16A16(rgba);
-    _x++;
+    if (_IHDR.interlaceMethod > 0) {
+      pixelmap.reposition(_x, _y);
+      pixelmap.writeR16G16B16A16(rgba);
+      _x += _interlaceIncrementsX[_interlacePass];
+    }
+    else {
+      pixelmap.writeR16G16B16A16(rgba);
+      _x++;
+    }
   }
 
 public:
