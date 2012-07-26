@@ -5,6 +5,11 @@ import io.stream;
 import drawing.color;
 
 version(Windows) {
+  import binding.c;
+
+  import binding.win32.winnt;
+  import binding.win32.winbase;
+  import binding.win32.wincon;
 }
 else version(linux) {
   import binding.c;
@@ -15,6 +20,51 @@ else {
 
 class Console {
 private:
+  version(Windows) {
+    static const ushort _fgclrvalues[] = [
+      0,
+      FOREGROUND_RED,
+      FOREGROUND_GREEN,
+      FOREGROUND_GREEN | FOREGROUND_RED,
+      FOREGROUND_BLUE,
+      FOREGROUND_RED   | FOREGROUND_BLUE,
+      FOREGROUND_BLUE  | FOREGROUND_GREEN,
+      FOREGROUND_RED   | FOREGROUND_GREEN | FOREGROUND_BLUE,
+    ];
+
+    static const ushort _bgclrvalues[] = [
+      0,
+      BACKGROUND_RED,
+      BACKGROUND_GREEN,
+      BACKGROUND_GREEN | BACKGROUND_RED,
+      BACKGROUND_BLUE,
+      BACKGROUND_RED   | BACKGROUND_BLUE,
+      BACKGROUND_BLUE  | BACKGROUND_GREEN,
+      BACKGROUND_RED   | BACKGROUND_GREEN | BACKGROUND_BLUE,
+    ];
+
+    ushort _curAttribs;
+
+    void _setColors() {
+      if (_bg is null) {
+        _bg = Color.Black;
+      }
+      int bgidx = _toNearestConsoleColor(_bg, 16);
+      if (_fg is null) {
+        _fg = Color.White;
+      }
+      int fgidx = _toNearestConsoleColor(_fg, 16);
+      auto bright = 0;
+      bgidx %= 8;
+      fgidx %= 8;
+      HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+      _curAttribs = cast(ushort)(_fgclrvalues[fgidx] | _bgclrvalues[bgidx] | (FOREGROUND_INTENSITY * cast(ushort)bright));
+
+      SetConsoleTextAttribute(hStdout, _curAttribs);
+    }
+  }
+
   Color _fg;
   Color _bg;
 
@@ -22,7 +72,7 @@ private:
   Stream _output;
   Stream _stream;
 
-  int _toNearestConsoleColor(Color clr) {
+  int _toNearestConsoleColor(Color clr, int maxColors) {
     int ret = 0;
     double mindistance = 100;
 
@@ -68,7 +118,7 @@ private:
       0xd0d0d0, 0xdadada, 0xe4e4e4, 0xeeeeee
     ];
 
-    foreach(size_t idx, comparedColor; colors) {
+    foreach(size_t idx, comparedColor; colors[0..maxColors]) {
       double red   = cast(double)((comparedColor >> 16) & 0xff) / cast(double)0xff;
       double green = cast(double)((comparedColor >>  8) & 0xff) / cast(double)0xff;
       double blue  = cast(double)((comparedColor >>  0) & 0xff) / cast(double)0xff;
@@ -119,25 +169,25 @@ private:
 		_output = new Stream();
 		_stream = new Stream();
 
-		_input.read = &_read;
-		_input.readInto = &_readInto;
+		_input.read      = &_read;
+		_input.readInto  = &_readInto;
 		_input.available = &_zero;
-		_input.length = &_zero;
-		_input.position = &_zero;
+		_input.length    = &_zero;
+		_input.position  = &_zero;
 
-		_output.write = &write;
-		_output.append = &write;
+		_output.write     = &write;
+		_output.append    = &write;
 		_output.available = &_zero;
-		_output.length = &_zero;
-		_output.position = &_zero;
+		_output.length    = &_zero;
+		_output.position  = &_zero;
 
-		_stream.read = &_read;
-		_stream.readInto = &_readInto;
+		_stream.read      = &_read;
+		_stream.readInto  = &_readInto;
 		_stream.available = &_zero;
-		_stream.length = &_zero;
-		_stream.position = &_zero;
-		_stream.write = &write;
-		_stream.append = &write;
+		_stream.length    = &_zero;
+		_stream.position  = &_zero;
+		_stream.write     = &write;
+		_stream.append    = &write;
 	}
 
 public:
@@ -169,8 +219,11 @@ public:
     _fg = value;
 
     version(linux) {
-      int fgidx = _toNearestConsoleColor(value);
+      int fgidx = _toNearestConsoleColor(value, 256);
       printf("\x1B[38;5;%dm\0".ptr, fgidx);
+    }
+    version(Windows) {
+      _setColors();
     }
   }
 
@@ -178,8 +231,11 @@ public:
     _bg = value;
 
     version(linux) {
-      int bgidx = _toNearestConsoleColor(value);
+      int bgidx = _toNearestConsoleColor(value, 256);
       printf("\x1B[48;5;%dm\0".ptr, bgidx);
+    }
+    version(Windows) {
+      _setColors();
     }
   }
 
@@ -197,6 +253,9 @@ public:
   void write(ubyte[] data) {
     version(linux) {
       printf("%.*s\0".ptr, data.length, cast(char*)data.ptr);
+    }
+    version(Windows) {
+      printf("%.*s\0".ptr, data.length, cast(char*)data.ptr);      
     }
   }
 
