@@ -30,7 +30,8 @@ else version(LDC) {
   private import ldc.cstdarg;
 }
 else {
-  private import dmd.cstdarg;
+  //private import std.c.stdarg;
+  private import tango.stdc.stdarg;
 }
 
 alias va_list Cva_list;
