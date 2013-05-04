@@ -1,0 +1,207 @@
+pub enum Color {
+  ColorRGBA { alpha: f64, red:f64, green:f64,      blue:f64 },
+  ColorHSLA { alpha: f64, hue:f64, saturation:f64, luminance:f64 }
+}
+
+pub fn foo() -> Color {
+  ColorHSLA { alpha: 1.0, hue: 1.0, saturation: 1.0, luminance: 1.0 }
+}
+
+impl Color {
+  pub fn hsla(hue: f64, saturation: f64, luminance: f64, alpha: f64) -> Color {
+    ColorHSLA { hue: hue, saturation: saturation,
+                luminance: luminance, alpha: alpha }
+  }
+
+  pub fn rgba(red: f64, green: f64, blue: f64, alpha: f64) -> Color {
+    ColorRGBA { red: red, green: green, blue: blue, alpha: alpha }
+  }
+
+  pub fn hsla_to_rgba(h: f64, s: f64, l: f64, alpha: f64) -> Color {
+    let q =
+      if (l < 0.5) {
+        l * (1.0 + s)
+      }
+      else {
+        l + s - (l * s)
+      };
+
+    let p = (2.0 * l) - q;
+
+    let mut ctmp = [h + (1.0/3.0), h, h - (1.0/3.0)];
+
+    for uint::range(0, 3) |i| {
+      if (ctmp[i] < 0.0) {
+        ctmp[i] += 1.0;
+      }
+      else if (ctmp[i] > 1.0) {
+        ctmp[i] -= 1.0;
+      }
+
+      if (ctmp[i] < (1.0 / 6.0)) {
+        ctmp[i] = p + ((q - p) * 6.0 * ctmp[i]);
+      }
+      else if (ctmp[i] < 0.5) {
+        ctmp[i] = q;
+      }
+      else if (ctmp[i] < (2.0 / 3.0)) {
+        ctmp[i] = p + (q - p) * ((2.0 / 3.0) - ctmp[i]) * 6.0;
+      }
+      else {
+        ctmp[i] = p;
+      }
+    }
+
+    let red   = if (s == 0.0) { l } else { ctmp[0] };
+    let green = if (s == 0.0) { l } else { ctmp[1] };
+    let blue  = if (s == 0.0) { l } else { ctmp[2] };
+
+    ColorRGBA { alpha: alpha,
+                red: red,
+                green: green,
+                blue: blue }
+  }
+
+  pub fn rgba_to_hsla(r: f64, g: f64, b: f64, alpha: f64) -> Color {
+    let mut min;
+    let mut max;
+    let mut maxColor;
+
+    if (r <= g && r <= b) {
+      min = r;
+      if (g < b) {
+        max = b;
+        maxColor = 2;
+      }
+      else {
+        max = g;
+        maxColor = 1;
+      }
+    }
+    else if (g <= b && g <= r) {
+      min = g;
+      if (r < b) {
+        max = b;
+        maxColor = 2;
+      }
+      else {
+        max = r;
+        maxColor = 0;
+      }
+    }
+    else {
+      min = b;
+      if (r < g) {
+        max = g;
+        maxColor = 1;
+      }
+      else {
+        max = r;
+        maxColor = 0;
+      }
+    }
+
+    let luminance = (max + min) * 0.5;
+
+    let saturation =
+      if (max == min) {
+        0.0
+      }
+      else if (luminance < 0.5) {
+        (max - min) / (max + min)
+      }
+      else {
+        (max - min) / (2.0 - max - min)
+      };
+
+    let hue =
+      if (max == min) {
+        0.0
+      }
+      else if (maxColor == 0) {
+        (g - b) / (max - min)
+      }
+      else if (maxColor == 1){
+        2.0 + (b - r) / (max - min)
+      }
+      else {
+        4.0 + (r - g) / (max - min)
+      } / 6.0;
+
+    ColorHSLA { alpha: alpha,
+                hue: hue,
+                saturation: saturation,
+                luminance: luminance }
+  }
+
+  pub fn to_hsla(&self) -> Color {
+    match *self {
+      ColorRGBA {alpha: a, red: r, green: g, blue: b}
+        => Color::rgba_to_hsla(r, g, b, a),
+      ColorHSLA {_} => *self
+    }
+  }
+
+  pub fn to_rgba(&self) -> Color {
+    match *self {
+      ColorRGBA {_} => *self,
+      ColorHSLA {alpha: a, hue: h, saturation: s, luminance: l}
+        => Color::hsla_to_rgba(h, s, l, a)
+    }
+  }
+
+  pub fn red(&self) -> f64 {
+    match *self {
+      ColorHSLA {alpha: a, hue: h, saturation: s, luminance: l}
+        => Color::hsla_to_rgba(h, s, l, a).red(),
+      ColorRGBA {red: r, _} => r
+    }
+  }
+
+  pub fn green(&self) -> f64 {
+    match *self {
+      ColorHSLA {alpha: a, hue: h, saturation: s, luminance: l}
+        => Color::hsla_to_rgba(h, s, l, a).green(),
+      ColorRGBA {green: g, _} => g
+    }
+  }
+
+  pub fn blue(&self) -> f64 {
+    match *self {
+      ColorHSLA {alpha: a, hue: h, saturation: s, luminance: l}
+        => Color::hsla_to_rgba(h, s, l, a).blue(),
+      ColorRGBA {blue: b, _} => b
+    }
+  }
+
+  pub fn hue(&self) -> f64 {
+    match *self {
+      ColorRGBA {alpha: a, red: r, green: g, blue: b}
+        => Color::rgba_to_hsla(r, g, b, a).hue(),
+      ColorHSLA {hue: h, _} => h
+    }
+  }
+
+  pub fn saturation(&self) -> f64 {
+    match *self {
+      ColorRGBA {alpha: a, red: r, green: g, blue: b}
+        => Color::rgba_to_hsla(r, g, b, a).saturation(),
+      ColorHSLA {saturation: s, _} => s
+    }
+  }
+
+  pub fn luminance(&self) -> f64 {
+    match *self {
+      ColorRGBA {alpha: a, red: r, green: g, blue: b}
+        => Color::rgba_to_hsla(r, g, b, a).luminance(),
+      ColorHSLA {luminance: l, _} => l
+    }
+  }
+
+  pub fn alpha(&self) -> f64 {
+    match *self {
+      ColorRGBA {alpha: a, _} => a,
+      ColorHSLA {alpha: a, _} => a
+    }
+  }
+}
