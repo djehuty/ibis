@@ -41,3 +41,10 @@ pub enum Access {
   WriteExecutable = 6,
   ReadWriteExecutable = 7
 }
+
+pub enum Result {
+  Reader(~Readable),
+  Writer(~Writable),
+  Stream(~Streamable),
+  Error(u64)
+}
