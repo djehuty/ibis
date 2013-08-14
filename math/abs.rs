@@ -1,15 +1,19 @@
+#[link(name = "abs", vers = "1.0")];
+
+use std::cast;
+
 pub fn abs_f64(x: f64) -> f64 {
   unsafe {
-    cast::reinterpret_cast::<u64, f64>(
-      &(cast::reinterpret_cast::<f64, u64>(&x) & 0x7fffffffffffffff)
+    cast::transmute_copy::<u64, f64>(
+      &(cast::transmute_copy::<f64, u64>(&x) & 0x7fffffffffffffff)
     )
   }
 }
 
 pub fn abs_f32(x: f32) -> f32 {
   unsafe {
-    cast::reinterpret_cast::<u32, f32>(
-      &(cast::reinterpret_cast::<f32, u32>(&x) & 0x7fffffff)
+    cast::transmute_copy::<u32, f32>(
+      &(cast::transmute_copy::<f32, u32>(&x) & 0x7fffffff)
     )
   }
 }

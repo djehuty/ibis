@@ -1,4 +1,8 @@
+#[link(name = "sha224", vers = "1.0")];
+
 use hash::digest::*;
+
+use std::uint;
 
 mod hash {
   extern mod digest;
@@ -15,8 +19,9 @@ static K: [u32, ..64] = [
   0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 ];
 
-pub fn hash_string(str: &str) -> Digest {
-  hash(str::to_bytes(str))
+pub fn hash_string(data: &str) -> Digest {
+  let foo: ~[u8] = data.byte_iter().collect();
+  hash(foo)
 }
 
 pub fn hash(data: &[u8]) -> Digest {
@@ -51,8 +56,8 @@ pub fn hash(data: &[u8]) -> Digest {
 
   let bit_length = data.len() as u64 * 8;
 
-  for uint::range_step(0, number_bytes, 64) |x| {
-    for uint::range(0, 16) |i| {
+  do uint::range_step(0, number_bytes, 64) |x| {
+    do uint::range_step(0, 16, 1) |i| {
       words[i] = {
         let mut index = i*4 + x;
         let mut left = 4;
@@ -77,15 +82,19 @@ pub fn hash(data: &[u8]) -> Digest {
 
         chunk
       };
-    }
 
-    for uint::range(0, 48) |i| {
+      true
+    };
+
+    do uint::range_step(0, 48, 1) |i| {
       let s0 = ((words[i+1] >> 7) | (words[i+1] << 25)) ^ ((words[i+1] >> 18) | (words[i+1] << 14)) ^ ((words[i+1] >> 3));
       let s1 = ((words[i+14] >> 17) | (words[i+14] << 15)) ^ ((words[i+14] >> 19) | (words[i+14] << 13)) ^ ((words[i+14] >> 10));
       words[i+16] = words[i] + s0 + words[i+9] + s1;
-    }
 
-    for uint::range(0, 64) |i| {
+      true
+    };
+
+    do uint::range_step(0, 64, 1) |i| {
       let s0  = ((a >> 2) | (a << 30)) ^ ((a >> 13) | (a << 19)) ^ ((a >> 22) | (a << 10));
       let maj = (a & b) ^ (a & c) ^ (b & c);
       let t2  = s0 + maj;
@@ -101,7 +110,9 @@ pub fn hash(data: &[u8]) -> Digest {
       c = b;
       b = a;
       a = t1 + t2;
-    }
+
+      true
+    };
 
     a += a0;
     b += b0;
@@ -111,7 +122,9 @@ pub fn hash(data: &[u8]) -> Digest {
     f += f0;
     g += g0;
     h += h0;
-  }
+
+    true
+  };
 
   Digest { data: ~[a, b, c, d, e, f, g] }
 }

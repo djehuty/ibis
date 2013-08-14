@@ -1,3 +1,5 @@
+#[link(name = "unicode", vers = "1.0")];
+
 static COMBINING_MARKS: [[u32, ..2], ..168] = [
   // Combining Diacritical Marks
   [0x300, 0x36f],
@@ -171,13 +173,19 @@ static COMBINING_MARKS: [[u32, ..2], ..168] = [
 ];
 
 pub fn isCombiningMark(c: u32) -> bool {
-  for COMBINING_MARKS.each |range| {
-    if c >= range[0] && c <= range[1] {
-      return true;
-    }
-  }
+  let mut ret = false;
 
-  false
+  do COMBINING_MARKS.iter().map() |range| {
+    if c >= range[0] && c <= range[1] {
+      ret = true;
+      false
+    }
+    else {
+      true
+    }
+  };
+
+  ret
 }
 
 pub fn combine(a: u32, combiningMark: u32) -> u32 {

@@ -1,3 +1,5 @@
+#[link(name = "french_fr", vers = "1.0")];
+
 use culture::locale::*;
 
 use chrono::month::*;
@@ -32,10 +34,10 @@ pub fn locale() -> Locale {
 }
 
 pub fn timeShort(hour: u32, minute: u32) -> ~str {
-  let mut ret = text::format::integer(hour as i64, 10) + ~" h ";
+  let ret = text::format::integer(hour as i64, 10) + " h ";
 
   if (minute < 10) {
-    ret + ~"0" + text::format::integer(minute as i64, 10)
+    ret + "0" + text::format::integer(minute as i64, 10)
   }
   else {
     ret + text::format::integer(minute as i64, 10)
@@ -43,20 +45,20 @@ pub fn timeShort(hour: u32, minute: u32) -> ~str {
 }
 
 pub fn timeLong(hour: u32, minute: u32, second: u32) -> ~str {
-  let mut ret = text::format::integer(hour as i64, 10) + ~":";
+  let mut ret = text::format::integer(hour as i64, 10) + ":";
 
   ret =
     if (minute < 10) {
-      ret + ~"0" + text::format::integer(minute as i64, 10)
+      ret + "0" + text::format::integer(minute as i64, 10)
     }
     else {
       ret + text::format::integer(minute as i64, 10)
     };
 
-  ret += ~":";
+  ret = ret.append(":");
 
   if (second < 10) {
-    ret + ~"0" + text::format::integer(second as i64, 10)
+    ret + "0" + text::format::integer(second as i64, 10)
   }
   else {
     ret + text::format::integer(second as i64, 10)
@@ -64,20 +66,20 @@ pub fn timeLong(hour: u32, minute: u32, second: u32) -> ~str {
 }
 
 pub fn dateShort(month: Month, day: u32) -> ~str {
-  ::month(month) + ~" " + text::format::integer(day as i64, 10)
+  ::month(month) + " " + text::format::integer(day as i64, 10)
 }
 
 pub fn dateLong(month: Month, day: u32, year: u64) -> ~str {
-  ::month(month) + ~" " + text::format::integer(day as i64, 10)
-                 + ~" " + text::format::integer(year as i64, 10)
+  ::month(month) + " " + text::format::integer(day as i64, 10)
+                 + " " + text::format::integer(year as i64, 10)
 }
 
 pub fn dateTimeShort(month: Month, day: u32, year: u64, hour: u32, minute: u32) -> ~str {
-  timeShort(hour, minute) + ~" on " + dateLong(month, day, year)
+  timeShort(hour, minute) + " on " + dateLong(month, day, year)
 }
 
 pub fn dateTimeLong(month: Month, day: u32, year: u64, hour: u32, minute: u32, second: u32) -> ~str {
-  timeLong(hour, minute, second) + ~" on " + dateLong(month, day, year)
+  timeLong(hour, minute, second) + " on " + dateLong(month, day, year)
 }
 
 pub fn month(month: Month) -> ~str {

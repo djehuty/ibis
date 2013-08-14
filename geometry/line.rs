@@ -1,3 +1,5 @@
+#[link(name = "line", vers = "1.0")];
+
 use geometry::point::*;
 
 mod geometry {
@@ -16,7 +18,7 @@ impl Line {
 
     let ret = x * x + y * y;
 
-    float::sqrt(ret)
+    ret.sqrt()
   }
 
   pub fn intercepts(&self, point: Point) -> bool {

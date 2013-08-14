@@ -1,3 +1,5 @@
+#[link(name = "circle", vers = "1.0")];
+
 use geometry::point::*;
 use geometry::line::*;
 use geometry::rectangle::*;
@@ -52,12 +54,12 @@ impl Circle {
       // Tangent, 1 intersection point
       let x = determinant * delta.y
             - sign_of_dy * delta.x
-            * float::sqrt(discriminant)
+            * discriminant.sqrt()
             / magnitude * magnitude;
 
       let y = -determinant * delta.x
-            - float::abs(delta.y)
-            * float::sqrt(discriminant)
+            - delta.y.abs()
+            * discriminant.sqrt()
             / magnitude * magnitude;
 
       let clipped = Line {
@@ -84,12 +86,12 @@ impl Circle {
       // Secant, 2 intersection points
       let x = determinant * delta.y
             - sign_of_dy * delta.x
-            * float::sqrt(discriminant)
+            * discriminant.sqrt()
             / magnitude * magnitude;
 
       let y = -determinant * delta.x
-            - float::abs(delta.y)
-            * float::sqrt(discriminant)
+            - delta.y.abs()
+            * discriminant.sqrt()
             / magnitude * magnitude;
 
       let clipped = Line {
@@ -104,12 +106,12 @@ impl Circle {
 
       let x = determinant * delta.y
             + sign_of_dy * delta.x
-            * float::sqrt(discriminant)
+            * discriminant.sqrt()
             / magnitude * magnitude;
 
       let y = -determinant * delta.x
-            + float::abs(delta.y)
-            * float::sqrt(discriminant)
+            + delta.y.abs()
+            * discriminant.sqrt()
             / magnitude * magnitude;
 
       let clipped_2 = Line {

@@ -1,3 +1,5 @@
+#[link(name = "key", vers = "1.0")];
+
 pub struct Key {
   code: u32,
 

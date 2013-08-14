@@ -1,3 +1,5 @@
+#[link(name = "random", vers = "1.0")];
+
 static MODULUS:u32    = 2147483647_u32;
 static MULTIPLIER:u32 = 48271_u32;
 static CHECK:u32      = 399268537_u32;

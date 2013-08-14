@@ -1,3 +1,5 @@
+#[link(name = "utf8", vers = "1.0")];
+
 mod text {
   extern mod unicode;
 }
@@ -99,10 +101,12 @@ pub fn utf16Length(s: &[u8]) -> u64 {
     }
 
     let mut ch:u32 = 0;
-    for s.slice(i, end).each |b| {
+    do s.slice(i, end).iter().map() |b| {
       ch <<= 6;
       ch += *b as u32;
-    }
+
+      true
+    };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
     if ch >= UNI_SUR_HIGH_START && ch <= UNI_SUR_LOW_END {
@@ -137,10 +141,12 @@ pub fn utf32Length(s: &[u8]) -> u64 {
     }
 
     let mut ch:u32 = 0;
-    for s.slice(i, end).each |b| {
+    do s.slice(i, end).iter().map() |b| {
       ch <<= 6;
       ch += *b as u32;
-    }
+
+      true
+    };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
     if ch >= UNI_SUR_HIGH_START && ch <= UNI_SUR_LOW_END {
@@ -172,10 +178,12 @@ pub fn toUtf16(s: &[u8], r: &mut[u16]) {
     }
 
     let mut ch:u32 = 0;
-    for s.slice(i, end).each |b| {
+    do s.slice(i, end).iter().map() |b| {
       ch <<= 6;
       ch += *b as u32;
-    }
+
+      true
+    };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
     if ch >= UNI_SUR_HIGH_START && ch <= UNI_SUR_LOW_END {
@@ -212,10 +220,12 @@ pub fn toUtf32(s: &[u8], r: &mut[u32]) {
     }
 
     let mut ch:u32 = 0;
-    for s.slice(i, end).each |b| {
+    do s.slice(i, end).iter().map() |b| {
       ch <<= 6;
       ch += *b as u32;
-    }
+
+      true
+    };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
     if ch >= UNI_SUR_HIGH_START && ch <= UNI_SUR_LOW_END {
@@ -246,10 +256,12 @@ pub fn length(s: &[u8]) -> u64 {
     }
 
     let mut ch:u32 = 0;
-    for s.slice(i, end).each |b| {
+    do s.slice(i, end).iter().map() |b| {
       ch <<= 6;
       ch += *b as u32;
-    }
+
+      true
+    };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
     if ch >= UNI_SUR_HIGH_START && ch <= UNI_SUR_LOW_END {
@@ -281,10 +293,12 @@ pub fn firstUtf32Char(s: &[u8]) -> u32 {
   }
 
   let mut ch:u32 = 0;
-  for s.slice(0, end).each |b| {
+  do s.slice(0, end).iter().map() |b| {
     ch += *b as u32;
     ch <<= 6;
-  }
+
+    true
+  };
   ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[0]]];
 
   if ch >= UNI_SUR_HIGH_START && ch <= UNI_SUR_LOW_END {

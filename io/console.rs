@@ -1,3 +1,11 @@
+#[link(name = "console", vers = "1.0")];
+
+use std::cast;
+use std::ptr;
+use std::os;
+use std::libc;
+use std::u32;
+
 mod drawing {
   extern mod color;
 }
@@ -55,7 +63,7 @@ fn nearestXtermColor(color: drawing::color::Color) -> u32 {
   let mut mindistance = 100.0;
   let mut ret = 0_u32;
 
-  for u32::range(0, 256) |i| {
+  do u32::range_step(0, 256, 1) |i| {
     let comparedColor = colors[i];
     let red   = ((comparedColor >> 16) & 0xff) as f64 / 255_f64;
     let green = ((comparedColor >>  8) & 0xff) as f64 / 255_f64;
@@ -84,7 +92,9 @@ fn nearestXtermColor(color: drawing::color::Color) -> u32 {
       mindistance = distance;
       ret = i;
     }
-  }
+
+    true
+  };
 
   ret
 }
@@ -109,11 +119,14 @@ impl Console {
 }
 
 pub fn print(string: &str) {
+  let foo: ~[char] = string.iter().collect();
+  let arr: ~[u8] = unsafe{cast::transmute(foo)};
+
   unsafe {
     let mut count = 0u;
-    do vec::as_const_buf(str::to_bytes(string)) |vbuf, len| {
+    do arr.as_imm_buf |vbuf, len| {
       while count < len {
-        let vb = ptr::const_offset(vbuf, count) as *libc::c_void;
+        let vb = ptr::const_offset(vbuf, count as int) as *libc::c_void;
         let nout = libc::write(0, vb, len as libc::size_t);
         if nout < 0 as libc::ssize_t {
             error!("error writing buffer");

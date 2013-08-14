@@ -1,3 +1,5 @@
+#[link(name = "time", vers = "1.0")];
+
 pub struct Time {
   microseconds: u64,
 }

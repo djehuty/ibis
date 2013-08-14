@@ -1,3 +1,7 @@
+#[link(name = "trig", vers = "1.0")];
+
+use std::cast;
+
 mod math {
   extern mod abs;
 }
@@ -38,7 +42,7 @@ fn rempio2(x: f64, y: &mut [f64]) -> u32 {
     0x404858EB, 0x404921FB
   ];
 
-  let int_rep = unsafe { cast::reinterpret_cast::<f64, u64>(&x) };
+  let int_rep = unsafe { cast::transmute_copy::<f64, u64>(&x) };
   let highx = int_rep >> 32;
 
   let ix = (highx & 0x7fffffff) as u32;
@@ -97,7 +101,7 @@ fn rempio2(x: f64, y: &mut [f64]) -> u32 {
 
       y[0] = r - w;
 
-      let high = unsafe { cast::reinterpret_cast::<f64, u64>(&y[0]) } >> 32;
+      let high = unsafe { cast::transmute_copy::<f64, u64>(&y[0]) } >> 32;
       let i2 = j - ((high >> 20) & 0x7ff) as u32;
 
       if (i2 > 16) { // Need a 2nd iteration
@@ -107,7 +111,7 @@ fn rempio2(x: f64, y: &mut [f64]) -> u32 {
         w = (f * PIO2_2T) - ((t - r) - w);
         y[0] = r - w;
 
-        let high = unsafe { cast::reinterpret_cast::<f64, u64>(&y[0]) } >> 32;
+        let high = unsafe { cast::transmute_copy::<f64, u64>(&y[0]) } >> 32;
 
         let i3 = j - ((high >> 20) & 0x7ff) as u32;
         if (i3 > 49) { // 3rd iteration (151 bits accurate)
@@ -136,7 +140,7 @@ fn rempio2(x: f64, y: &mut [f64]) -> u32 {
 }
 
 fn _cos(x: f64, y: f64) -> f64 {
-  let int_rep = unsafe { cast::reinterpret_cast::<f64, u64>(&x) };
+  let int_rep = unsafe { cast::transmute_copy::<f64, u64>(&x) };
   let highx = int_rep >> 32;
 
   let ix = (highx & 0x7fffffff) as u32;
@@ -173,7 +177,7 @@ fn _cos(x: f64, y: f64) -> f64 {
     else {
       let qx_part = (ix as u64) << 32;
 
-      unsafe { cast::reinterpret_cast::<u64, f64>(&qx_part) }
+      unsafe { cast::transmute_copy::<u64, f64>(&qx_part) }
     };
 
   let hz = (0.5*z) - qx;
@@ -183,7 +187,7 @@ fn _cos(x: f64, y: f64) -> f64 {
 }
 
 fn _sin(x: f64, y: f64, iy: bool) -> f64 {
-  let int_rep = unsafe { cast::reinterpret_cast::<f64, u64>(&x) };
+  let int_rep = unsafe { cast::transmute_copy::<f64, u64>(&x) };
   let highx = int_rep >> 32;
 
   let ix = (highx & 0x7fffffff) as u32;
@@ -214,9 +218,9 @@ fn _sin(x: f64, y: f64, iy: bool) -> f64 {
   }
 }
 
-pub fn cos(x: f64) -> f64 {
+pub fn cos_f64(x: f64) -> f64 {
   // Get the high 32 bits of the input
-  let int_rep = unsafe { cast::reinterpret_cast::<f64, u64>(&x) };
+  let int_rep = unsafe { cast::transmute_copy::<f64, u64>(&x) };
   let highx = int_rep >> 32;
 
   let ix = (highx & 0x7fffffff) as u32;
@@ -243,9 +247,9 @@ pub fn cos(x: f64) -> f64 {
   }
 }
 
-pub fn sin(x: f64) -> f64 {
+pub fn sin_f64(x: f64) -> f64 {
   // Get the high 32 bits of the input
-  let int_rep = unsafe { cast::reinterpret_cast::<f64, u64>(&x) };
+  let int_rep = unsafe { cast::transmute_copy::<f64, u64>(&x) };
   let highx = int_rep >> 32;
 
   let ix = (highx & 0x7fffffff) as u32;

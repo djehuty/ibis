@@ -1,3 +1,7 @@
+#[link(name = "color", vers = "1.0")];
+
+use std::uint;
+
 pub enum Color {
   ColorRGBA { alpha: f64, red:f64, green:f64,      blue:f64 },
   ColorHSLA { alpha: f64, hue:f64, saturation:f64, luminance:f64 }
@@ -30,7 +34,7 @@ impl Color {
 
     let mut ctmp = [h + (1.0/3.0), h, h - (1.0/3.0)];
 
-    for uint::range(0, 3) |i| {
+    do uint::range_step(0, 3, 1) |i| {
       if (ctmp[i] < 0.0) {
         ctmp[i] += 1.0;
       }
@@ -50,7 +54,9 @@ impl Color {
       else {
         ctmp[i] = p;
       }
-    }
+
+      true
+    };
 
     let red   = if (s == 0.0) { l } else { ctmp[0] };
     let green = if (s == 0.0) { l } else { ctmp[1] };
@@ -63,9 +69,9 @@ impl Color {
   }
 
   pub fn rgba_to_hsla(r: f64, g: f64, b: f64, alpha: f64) -> Color {
-    let mut min;
-    let mut max;
-    let mut maxColor;
+    let min;
+    let max;
+    let maxColor;
 
     if (r <= g && r <= b) {
       min = r;

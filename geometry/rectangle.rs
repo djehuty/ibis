@@ -1,3 +1,5 @@
+#[link(name = "rectangle", vers = "1.0")];
+
 use geometry::point::*;
 use geometry::line::*;
 

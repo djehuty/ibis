@@ -1,3 +1,9 @@
+#[link(name = "format", vers = "1.0")];
+
+use std::uint;
+use std::str;
+use std::cast;
+
 mod math {
   extern mod abs;
 }
@@ -52,7 +58,7 @@ pub fn floatingPoint(value: f64, base: u32, point: ~str) -> ~str {
 }
 
 pub fn floatingPointComponents(value: f64, base: u32) -> (~str, ~str) {
-  let int_rep = unsafe { cast::reinterpret_cast::<f64, i64>(&value) };
+  let int_rep = unsafe { cast::transmute_copy::<f64, i64>(&value) };
   let exp = ((int_rep >> 52) & 0x7ff);
   let unbiased_exp = (exp as i64) - 1023;
 
@@ -97,16 +103,17 @@ pub fn floatingPointComponents(value: f64, base: u32) -> (~str, ~str) {
     let mut b = ~"";
 
     if ((int_rep as i64) < 0_i64) {
-      a = ~"-";
+      a = a.append("-");
     }
 
-    a += integer(intPart as i64, base);
+    a = a.append(integer(intPart as i64, base));
 
-    for uint::range(0, 8) |_| {
+    for _ in range(0, 8) {
       fracPart *= 10;
-      b += str::from_char((((fracPart >> 53) as u16) + '0' as u16) as char);
+      let foo: ~str = str::from_char((((fracPart >> 53) as u16) + '0' as u16) as char);
+      b = b.append(foo);
       fracPart &= 0x1fffffffffffff;
-    }
+    };
 
     // round last digit
     let last_char = b[b.len() - 1];
@@ -126,23 +133,23 @@ pub fn floatingPointComponents(value: f64, base: u32) -> (~str, ~str) {
     }
 
     // get rid of useless zeroes (and point if necessary)
-    for uint::range_step(blen - 1, 0, -1) |i| {
+    do uint::range_step(blen - 1, 0, -1) |i| {
       if b[i] == '0' as u8 {
         b[i] = 0;
         blen -= 1;
+
+        true
       }
       else {
-        break;
+        false
       }
-    }
-
-    b = { str::from_bytes(str::to_bytes(b.slice(0, blen))) };
+    };
 
     if a.len() == 0 && blen == 0 {
       (~"0", ~"")
     }
     else {
-      (a, b)
+      (a, b.slice(0, blen).to_owned())
     }
   }
 }

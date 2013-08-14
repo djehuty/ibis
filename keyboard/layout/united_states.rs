@@ -1,3 +1,5 @@
+#[link(name = "united_states", vers = "1.0")];
+
 use keyboard::key::*;
 
 mod keyboard {

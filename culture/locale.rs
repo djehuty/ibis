@@ -1,3 +1,5 @@
+#[link(name = "locale", vers = "1.0")];
+
 use chrono::month::*;
 use chrono::weekday::*;
 

@@ -1,4 +1,10 @@
 #!/bin/sh
+if [ "$1" == "" ]
+then
+  echo "Usage: build <module>"
+  echo "Example: build io/console"
+  exit 1
+fi
 
 # Get module name
 modulename="${1##*/}"
@@ -12,11 +18,24 @@ else
   modulename="${modulename:0:-3}"
 fi
 
+if [ ! -e "${filename}" ]
+then
+  echo "error: implementation not found for ${modulename}"
+  exit 1
+fi
+
 # Compile
-rustc --lib ${filename} -L libs
+existing_lib=`ls ./.libs/lib${modulename}-*.so 2> /dev/null`
+if test "${filename}" -nt "${existing_lib}"
+then
+  rustc --lib ${filename} -L .libs
 
-# Remove any versions we already have (for now)
-rm -f libs/lib${modulename}*.so
+  # Add libs directory
+  mkdir -p .libs
 
-# Move built lib to libs
-mv "${dirname}"/*.so libs
+  # Remove any versions we already have (for now)
+  rm -f .libs/lib${modulename}*.so
+
+  # Move built lib to libs
+  mv "${dirname}"/*.so .libs
+fi

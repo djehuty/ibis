@@ -1,3 +1,5 @@
+#[link(name = "utf16", vers = "1.0")];
+
 static UNI_SUR_HIGH_START:   u32 = 0xD800;
 static UNI_SUR_HIGH_END:     u32 = 0xDBFF;
 static UNI_SUR_LOW_START:    u32 = 0xDC00;

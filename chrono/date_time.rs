@@ -1,3 +1,5 @@
+#[link(name = "date_time", vers = "1.0")];
+
 use chrono::month::*;
 use chrono::weekday::*;
 use chrono::date::*;
