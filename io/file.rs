@@ -12,6 +12,74 @@ struct File {
   descriptor: u64
 }
 
+pub fn create(filename: &str, access: io::stream::Access) -> ~io::stream::Result {
+  let fd = unsafe {
+    do filename.to_c_str().with_ref |pathbuf| {
+      do "w+b".to_c_str().with_ref |modebuf| {
+        libc::fopen(pathbuf, modebuf)
+      }
+    }
+  } as u64;
+
+  let file = ~File {
+    descriptor: fd
+  };
+
+  if fd == -1 {
+    ~io::stream::Error(0)
+  }
+  else {
+    match access {
+      io::stream::Read => ~io::stream::Reader(file as ~io::stream::Readable),
+      io::stream::Write => ~io::stream::Writer(file as ~io::stream::Writable),
+      io::stream::ReadWrite => ~io::stream::Stream(file as ~io::stream::Streamable),
+      io::stream::Executable => ~io::stream::Reader(file as ~io::stream::Readable),
+      io::stream::ReadExecutable => ~io::stream::Reader(file as ~io::stream::Readable),
+      io::stream::WriteExecutable => ~io::stream::Writer(file as ~io::stream::Writable),
+      io::stream::ReadWriteExecutable => ~io::stream::Stream(file as ~io::stream::Streamable)
+    }
+  }
+}
+
+pub fn open(filename: &str, access: io::stream::Access) -> ~io::stream::Result {
+  let fd = unsafe {
+    let access_str = match(access) {
+      io::stream::Read => "rb",
+      io::stream::Write => "wb",
+      io::stream::ReadWrite => "r+b",
+      io::stream::Executable => "rb",
+      io::stream::ReadExecutable => "rb",
+      io::stream::WriteExecutable => "wb",
+      io::stream::ReadWriteExecutable => "r+b"
+    };
+
+    do filename.to_c_str().with_ref |pathbuf| {
+      do access_str.to_c_str().with_ref |modebuf| {
+        libc::fopen(pathbuf, modebuf)
+      }
+    }
+  } as u64;
+
+  let file = ~File {
+    descriptor: fd
+  };
+
+  if fd == 0 {
+    ~io::stream::Error(0)
+  }
+  else {
+    match access {
+      io::stream::Read => ~io::stream::Reader(file as ~io::stream::Readable),
+      io::stream::Write => ~io::stream::Writer(file as ~io::stream::Writable),
+      io::stream::ReadWrite => ~io::stream::Stream(file as ~io::stream::Streamable),
+      io::stream::Executable => ~io::stream::Reader(file as ~io::stream::Readable),
+      io::stream::ReadExecutable => ~io::stream::Reader(file as ~io::stream::Readable),
+      io::stream::WriteExecutable => ~io::stream::Writer(file as ~io::stream::Writable),
+      io::stream::ReadWriteExecutable => ~io::stream::Stream(file as ~io::stream::Streamable)
+    }
+  }
+}
+
 impl io::stream::Readable for File {
   // TODO: Errorable Option Type should be returned
   pub fn readInto(&self, buffer: &mut [u8]) -> bool {
@@ -72,65 +140,6 @@ impl io::stream::Readable for File {
   pub fn position(&self) -> u64 {
     unsafe {
       libc::ftell(self.descriptor as *libc::FILE) as u64
-    }
-  }
-}
-
-pub fn create(filename: &str, access: io::stream::Access) -> ~io::stream::Result {
-  let fd = unsafe {
-    do filename.to_c_str().with_ref |pathbuf| {
-      do "w+b".to_c_str().with_ref |modebuf| {
-        libc::fopen(pathbuf, modebuf)
-      }
-    }
-  } as u64;
-
-  let file = ~File {
-    descriptor: fd
-  };
-
-  if fd == -1 {
-    ~io::stream::Error(0)
-  }
-  else {
-    match access {
-      io::stream::Read => ~io::stream::Reader(file as ~io::stream::Readable),
-      _ => ~io::stream::Error(0)
-    }
-  }
-}
-
-// TODO: Errorable Option Type should be returned
-pub fn open(filename: &str, access: io::stream::Access) -> ~io::stream::Result {
-  let fd = unsafe {
-    let access_str = match(access) {
-      io::stream::Read => "rb",
-      io::stream::Write => "wb",
-      io::stream::ReadWrite => "r+b",
-      io::stream::Executable => "rb",
-      io::stream::ReadExecutable => "rb",
-      io::stream::WriteExecutable => "wb",
-      io::stream::ReadWriteExecutable => "r+b"
-    };
-
-    do filename.to_c_str().with_ref |pathbuf| {
-      do access_str.to_c_str().with_ref |modebuf| {
-        libc::fopen(pathbuf, modebuf)
-      }
-    }
-  } as u64;
-
-  let file = ~File {
-    descriptor: fd
-  };
-
-  if fd == 0 {
-    ~io::stream::Error(0)
-  }
-  else {
-    match access {
-      io::stream::Read => ~io::stream::Reader(file as ~io::stream::Readable),
-      _ => ~io::stream::Error(0)
     }
   }
 }
