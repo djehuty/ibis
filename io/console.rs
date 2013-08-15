@@ -127,7 +127,7 @@ pub fn print(string: &str) {
     do arr.as_imm_buf |vbuf, len| {
       while count < len {
         let vb = ptr::const_offset(vbuf, count as int) as *libc::c_void;
-        let nout = libc::write(0, vb, len as libc::size_t);
+        let nout = libc::write(1, vb, len as libc::size_t);
         if nout < 0 as libc::ssize_t {
             error!("error writing buffer");
             error!("%s", os::last_os_error());
