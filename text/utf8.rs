@@ -101,11 +101,9 @@ pub fn utf16Length(s: &[u8]) -> u64 {
     }
 
     let mut ch:u32 = 0;
-    do s.slice(i, end).iter().map() |b| {
+    for b in s.slice(i, end).iter() {
       ch <<= 6;
       ch += *b as u32;
-
-      true
     };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
@@ -141,11 +139,9 @@ pub fn utf32Length(s: &[u8]) -> u64 {
     }
 
     let mut ch:u32 = 0;
-    do s.slice(i, end).iter().map() |b| {
+    for b in s.slice(i, end).iter() {
       ch <<= 6;
       ch += *b as u32;
-
-      true
     };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
@@ -178,11 +174,9 @@ pub fn toUtf16(s: &[u8], r: &mut[u16]) {
     }
 
     let mut ch:u32 = 0;
-    do s.slice(i, end).iter().map() |b| {
+    for b in s.slice(i, end).iter() {
       ch <<= 6;
       ch += *b as u32;
-
-      true
     };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
@@ -220,11 +214,9 @@ pub fn toUtf32(s: &[u8], r: &mut[u32]) {
     }
 
     let mut ch:u32 = 0;
-    do s.slice(i, end).iter().map() |b| {
+    for b in s.slice(i, end).iter() {
       ch <<= 6;
       ch += *b as u32;
-
-      true
     };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
@@ -256,11 +248,9 @@ pub fn length(s: &[u8]) -> u64 {
     }
 
     let mut ch:u32 = 0;
-    do s.slice(i, end).iter().map() |b| {
+    for b in s.slice(i, end).iter() {
       ch <<= 6;
       ch += *b as u32;
-
-      true
     };
     ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[i]]];
 
@@ -293,11 +283,9 @@ pub fn firstUtf32Char(s: &[u8]) -> u32 {
   }
 
   let mut ch:u32 = 0;
-  do s.slice(0, end).iter().map() |b| {
+  for b in s.slice(0, end).iter() {
     ch += *b as u32;
     ch <<= 6;
-
-    true
   };
   ch -= OFFSETS_FROM_UTF8[TRAILING_BYTES[s[0]]];
 

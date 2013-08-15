@@ -173,19 +173,13 @@ static COMBINING_MARKS: [[u32, ..2], ..168] = [
 ];
 
 pub fn isCombiningMark(c: u32) -> bool {
-  let mut ret = false;
-
-  do COMBINING_MARKS.iter().map() |range| {
+  for range in COMBINING_MARKS.iter() {
     if c >= range[0] && c <= range[1] {
-      ret = true;
-      false
-    }
-    else {
-      true
+      return true;
     }
   };
 
-  ret
+  return false;
 }
 
 pub fn combine(a: u32, combiningMark: u32) -> u32 {
