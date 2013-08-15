@@ -80,6 +80,12 @@ pub fn open(filename: &str, access: io::stream::Access) -> ~io::stream::Result {
   }
 }
 
+impl Drop for File {
+  pub fn drop(&self) {
+    unsafe { libc::fclose(self.descriptor as *libc::FILE); };
+  }
+}
+
 impl io::stream::Readable for File {
   // TODO: Errorable Option Type should be returned
   pub fn readInto(&self, buffer: &mut [u8]) -> bool {
