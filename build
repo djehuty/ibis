@@ -7,7 +7,7 @@ then
 fi
 
 # Get module name
-modulename="${1##*/}"
+modulename="${1//\//-}"
 dirname="$(dirname ${1})"
 
 if [ "${1: -3}" != ".rs" ]
@@ -28,14 +28,14 @@ fi
 existing_lib=`ls ./.libs/lib${modulename}-*.so 2> /dev/null`
 if test "${filename}" -nt "${existing_lib}"
 then
-  rustc --lib ${filename} -L .libs
+  rustc --lib ${filename} -L.libs
 
   # Add libs directory
   mkdir -p .libs
 
   # Remove any versions we already have (for now)
-  rm -f .libs/lib${modulename}*.so
+  rm -f .libs/lib${modulename}-*.so
 
   # Move built lib to libs
-  mv "${dirname}"/*.so .libs
+  mv "${dirname}"/*.so .libs/.
 fi

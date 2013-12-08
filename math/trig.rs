@@ -1,9 +1,9 @@
-#[link(name = "trig", vers = "1.0")];
+#[link(name = "math-trig", vers = "1.0", package_id = "math-trig")];
 
 use std::cast;
 
 mod math {
-  extern mod abs;
+  extern mod abs = "math-abs";
 }
 
 fn rempio2(x: f64, y: &mut [f64]) -> u32 {

@@ -1,4 +1,4 @@
-#[link(name = "time", vers = "1.0")];
+#[link(name = "chrono-time", vers = "1.0", package_id = "chrono-time")];
 
 pub struct Time {
   microseconds: u64,

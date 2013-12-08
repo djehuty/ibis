@@ -1,7 +1,10 @@
+#[link(name = "keyboard-layout-polish_programmers", vers = "1.0", package_id = "keyboard-layout-polish_programmers")];
+
+#[feature(globs)];
 use keyboard::key::*;
 
 mod keyboard {
-  extern mod key;
+  extern mod key = "keyboard-key";
 }
 
 static translateToChar:[char, ..173] = [
@@ -15,7 +18,7 @@ static translateToChar:[char, ..173] = [
   'y', 'u', 'i', 'o', 'p', '[', ']', '\\', '\x00', '\x00',
   '\x00', '7', '8', '9', '+', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', 'a', 's', 'd',
-  'f', 'g', 'h', 'j', 'k', 'l', ';', ''', '\x00', '4',
+  'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '\x00', '4',
   '5', '6', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', 'z',
   'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '\x00',

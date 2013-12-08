@@ -1,11 +1,10 @@
-#[link(name = "format", vers = "1.0")];
+#[link(name = "text-format", vers = "1.0", package_id = "text-format")];
 
-use std::uint;
 use std::str;
 use std::cast;
 
 mod math {
-  extern mod abs;
+  extern mod abs = "math-abs";
 }
 
 pub fn integer(value: i64, base: u32) -> ~str {
@@ -25,14 +24,14 @@ pub fn integer(value: i64, base: u32) -> ~str {
   tmp = displayed;
 
   while (len > 0) {
-    let off = ((tmp as u64) % (base as u64)) as u32;
+    let off = ((tmp as u64) % (base as u64)) as u8;
 
     let replace =
       if off < 10 {
-        (('0' as u32) + off) as char
+        (('0' as u8) + off) as char
       }
       else {
-        (('a' as u32) + (off - 10)) as char
+        (('a' as u8) + (off - 10)) as char
       };
 
     ret = str::from_char(replace) + ret;
@@ -110,7 +109,7 @@ pub fn floatingPointComponents(value: f64, base: u32) -> (~str, ~str) {
 
     for _ in range(0, 8) {
       fracPart *= 10;
-      let foo: ~str = str::from_char((((fracPart >> 53) as u16) + '0' as u16) as char);
+      let foo: ~str = str::from_char((((fracPart >> 53) as u8) + '0' as u8) as char);
       b = b.append(foo);
       fracPart &= 0x1fffffffffffff;
     };
@@ -118,38 +117,29 @@ pub fn floatingPointComponents(value: f64, base: u32) -> (~str, ~str) {
     // round last digit
     let last_char = b[b.len() - 1];
     let mut round_up = last_char >= ('5' as u8);
-    let mut blen = b.len() - 1;
+    let mut rounded_string = ~"";
+
+    let mut rounded_up_index = b.len() - 1;
 
     while round_up {
-      if (b[blen - 1] == '9' as u8) {
-        b[blen - 1] = 0;
-        blen -= 1;
-        round_up = blen > 0
+      if (b[rounded_up_index - 1] == '9' as u8) {
+        rounded_up_index -= 1;
+        round_up = rounded_up_index > 0
       }
       else {
-        b[blen - 1] += 1;
         round_up = false;
       }
     }
 
-    // get rid of useless zeroes (and point if necessary)
-    do uint::range_step(blen - 1, 0, -1) |i| {
-      if b[i] == '0' as u8 {
-        b[i] = 0;
-        blen -= 1;
+    // Round
+    rounded_string = rounded_string.append(b.slice(0, rounded_up_index));
+    rounded_string.push_char(((b.char_at(rounded_up_index) as u8) + 1) as char);
 
-        true
-      }
-      else {
-        false
-      }
-    };
-
-    if a.len() == 0 && blen == 0 {
+    if a.len() == 0 && b.len() == 0 {
       (~"0", ~"")
     }
     else {
-      (a, b.slice(0, blen).to_owned())
+      (a, b.slice(0, b.len()).to_owned())
     }
   }
 }

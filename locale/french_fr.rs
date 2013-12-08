@@ -1,21 +1,22 @@
-#[link(name = "french_fr", vers = "1.0")];
+#[link(name = "locale-french_fr", vers = "1.0", package_id = "locale-french_fr")];
 
+#[feature(globs)];
 use culture::locale::*;
 
 use chrono::month::*;
 use chrono::weekday::*;
 
 mod culture {
-  extern mod locale;
+  extern mod locale = "culture-locale";
 }
 
 mod chrono {
-  extern mod month;
-  extern mod weekday;
+  extern mod month = "chrono-month";
+  extern mod weekday = "chrono-weekday";
 }
 
 mod text {
-  extern mod format;
+  extern mod format = "text-format";
 }
 
 pub fn locale() -> Locale {

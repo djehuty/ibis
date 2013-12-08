@@ -1,4 +1,4 @@
-#[link(name = "sqrt", vers = "1.0")];
+#[link(name = "math-sqrt", vers = "1.0", package_id = "math-sqrt")];
 
 use std::cast;
 

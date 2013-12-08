@@ -1,4 +1,4 @@
-#[link(name = "unicode", vers = "1.0")];
+#[link(name = "text-unicode", vers = "1.0", package_id = "text-unicode")];
 
 static COMBINING_MARKS: [[u32, ..2], ..168] = [
   // Combining Diacritical Marks
@@ -183,8 +183,18 @@ pub fn isCombiningMark(c: u32) -> bool {
 }
 
 pub fn combine(a: u32, combiningMark: u32) -> u32 {
-  let ret:char = match combiningMark as char {
-    '\u0300' => match a as char {
+  let combiningMarkChar = match std::char::from_u32(combiningMark) {
+    Some(chr) => chr,
+    _ => '\0'
+  };
+
+  let matchChar = match std::char::from_u32(a) {
+    Some(chr) => chr,
+    _ => '\0'
+  };
+
+  let ret:char = match combiningMarkChar {
+    '\u0300' => match matchChar {
                   'a' => 'à',
                   'e' => 'è',
                   'i' => 'ì',
@@ -200,9 +210,9 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   'Y' => 'Ỳ',
                   'y' => 'ỳ',
                   ' ' => '`',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0301' => match a as char{ // acute
+    '\u0301' => match matchChar { // acute
                   'a' => '\u00e1',
                   'e' => '\u00e9',
                   'i' => '\u00ed',
@@ -234,9 +244,9 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   'W' => '\u1e82',
                   'w' => '\u1e83',
                   ' ' => '\u00b4',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0302' => match a as char { // circumflex
+    '\u0302' => match matchChar { // circumflex
                   'a' => '\u00e2',
                   'e' => '\u00ea',
                   'i' => '\u00ee',
@@ -262,9 +272,9 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   'W' => '\u0174',
                   'Y' => '\u0176',
                   ' ' => '^',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0303' => match a as char { // tilde
+    '\u0303' => match matchChar { // tilde
                   'a' => '\u00e3',
                   'A' => '\u00c3',
                   'n' => '\u00f1',
@@ -276,9 +286,9 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   'i' => '\u0129',
                   'I' => '\u0128',
                   ' ' => '~',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0304' => match a as char { // macron
+    '\u0304' => match matchChar { // macron
                   'A' => '\u0100',
                   'a' => '\u0101',
                   'E' => '\u0112',
@@ -292,9 +302,9 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   '\u00c6' => '\u01e2', // Latin AE (capital)
                   '\u00e6' => '\u01e3', // Latin AE (small)
                   ' ' => '\u00af',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0306' => match a as char { // breve
+    '\u0306' => match matchChar { // breve
                   'A' => '\u0102',
                   'a' => '\u0103',
                   'E' => '\u0114',
@@ -310,9 +320,9 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   '\u0416' => '\u04c1', // Cyrillic Letter Zhe (Capital)
                   '\u0436' => '\u04c2', // Cyrillic Letter Zhe (Small)
                   ' ' => '\u02d8',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0307' => match a as char{ // dot above
+    '\u0307' => match matchChar{ // dot above
                   'C' => '\u010a',
                   'c' => '\u010b',
                   'E' => '\u0116',
@@ -323,9 +333,9 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   'Z' => '\u017b',
                   'z' => '\u017c',
                   ' ' => '\u02d9',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0308' => match a as char{ // diaeresis
+    '\u0308' => match matchChar{ // diaeresis
                   'a' => '\u00e4',
                   'e' => '\u00eb',
                   'i' => '\u00ef',
@@ -341,25 +351,25 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   'W' => '\u1e84',
                   'w' => '\u1e85',
                   ' ' => '\u00a8',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u030a' => match a as char { // ring above
+    '\u030a' => match matchChar { // ring above
                   'A' => '\u00c5',
                   'a' => '\u00e5',
                   'U' => '\u016e',
                   'u' => '\u016f',
                   ' ' => '\u02da',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u030b' => match a as char { // double acute
+    '\u030b' => match matchChar { // double acute
                   'O' => '\u0150',
                   'o' => '\u0151',
                   'U' => '\u0170',
                   'u' => '\u0171',
                   ' ' => '\u02dd',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u030c' => match a as char { // caron
+    '\u030c' => match matchChar { // caron
                   'C' => '\u010c',
                   'c' => '\u010d',
                   'D' => '\u010e',
@@ -395,24 +405,24 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   '\u0292' => '\u01ef', // Ezh (small)
                   'j' => '\u01f0',
                   ' ' => '\u02c7',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u031b' => match a as char { // horn
+    '\u031b' => match matchChar { // horn
                   'O' => '\u01a0',
                   'o' => '\u01a1',
                   'U' => '\u01af',
                   'u' => '\u01b0',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0326' => match a as char { // comma below
+    '\u0326' => match matchChar { // comma below
                   'S' => '\u0218',
                   's' => '\u0219',
                   'T' => '\u021a',
                   't' => '\u021b',
                   ' ' => ',',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0327' => match a as char { // cedilla
+    '\u0327' => match matchChar { // cedilla
                   'C' => '\u00c7',
                   'c' => '\u00e7',
                   'G' => '\u0122',
@@ -430,9 +440,9 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   'T' => '\u0162',
                   't' => '\u0163',
                   ' ' => '\u00b8',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u0328' => match a as char { // ogonek
+    '\u0328' => match matchChar { // ogonek
                   'A' => '\u0104',
                   'a' => '\u0105',
                   'E' => '\u0118',
@@ -444,40 +454,40 @@ pub fn combine(a: u32, combiningMark: u32) -> u32 {
                   'O' => '\u01ea',
                   'o' => '\u01eb',
                   ' ' => '\u02db',
-                    _ => a as char
+                    _ => matchChar
                 },
-    '\u05bc' => match a as char { // hebrew point dagesh or mapiq
+    '\u05bc' => match matchChar { // hebrew point dagesh or mapiq
                   '\u05d1' => '\ufb31',
                   '\u05db' => '\ufb3b',
                   '\u05da' => '\ufb3a',
                   '\u05e4' => '\ufb44',
                   '\u05e3' => '\ufb43',
                   '\u05e9' => '\ufb49',
-                         _ => a as char
+                         _ => matchChar
                 },
-    '\u05bf' => match a as char { // hebrew point rafe
+    '\u05bf' => match matchChar { // hebrew point rafe
                   '\u05d1' => '\ufb4c',
                   '\u05db' => '\ufb4d',
                   '\u05e4' => '\ufb4e',
-                         _ => a as char
+                         _ => matchChar
                 },
-    '\u05c1' => match a as char { // hebrew point shin dot
+    '\u05c1' => match matchChar { // hebrew point shin dot
                   '\u05e9' => '\ufb2a',
-                         _ => a as char
+                         _ => matchChar
                 },
-    '\u05c2' => match a as char { // hebrew point sin dot
+    '\u05c2' => match matchChar { // hebrew point sin dot
                   '\u05e9' => '\ufb2b',
-                         _ => a as char
+                         _ => matchChar
                 },
-    '\u0654' => match a as char{ // arabic hamza above
+    '\u0654' => match matchChar { // arabic hamza above
                   '\u0627' => '\u0623',
                   '\u06c1' => '\u06c2',
                   '\u0648' => '\u0624',
                   '\u064a' => '\u0626',
                   '\u06d2' => '\u06d3',
-                         _ => a as char
+                         _ => matchChar
                 },
-           _ => a as char
+           _ => matchChar
   };
 
   ret as u32

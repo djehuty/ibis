@@ -1,14 +1,17 @@
+#[link(name = "keyboard-layout-french", vers = "1.0", package_id = "keyboard-layout-french")];
+
+#[feature(globs)];
 use keyboard::key::*;
 
 mod keyboard {
-  extern mod key;
+  extern mod key = "keyboard-key";
 }
 
 static translateToChar:[char, ..173] = [
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-  '\x00', '\x00', '\u00b2', '&', '\u00e9', '"', ''', '(', '-', '\u00e8',
+  '\x00', '\x00', '\u00b2', '&', '\u00e9', '"', '\'', '(', '-', '\u00e8',
   '_', '\u00e7', '\u00e0', ')', '=', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', 'a', 'z', 'e', 'r', 't',

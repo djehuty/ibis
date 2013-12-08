@@ -1,4 +1,4 @@
-#[link(name = "random", vers = "1.0")];
+#[link(name = "math-random", vers = "1.0", package_id = "math-random")];
 
 static MODULUS:u32    = 2147483647_u32;
 static MULTIPLIER:u32 = 48271_u32;

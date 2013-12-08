@@ -1,7 +1,10 @@
+#[link(name = "keyboard-layout-colemak", vers = "1.0", package_id = "keyboard-layout-colemak")];
+
+#[feature(globs)];
 use keyboard::key::*;
 
 mod keyboard {
-  extern mod key;
+  extern mod key = "keyboard-key";
 }
 
 static translateToChar:[char, ..173] = [
@@ -15,7 +18,7 @@ static translateToChar:[char, ..173] = [
   'j', 'l', 'u', 'y', ';', '[', ']', '\\', '\x00', '\x00',
   '\x00', '7', '8', '9', '+', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', 'a', 'r', 's',
-  't', 'd', 'h', 'n', 'e', 'i', 'o', ''', '\x00', '4',
+  't', 'd', 'h', 'n', 'e', 'i', 'o', '\'', '\x00', '4',
   '5', '6', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', 'z',
   'x', 'c', 'v', 'b', 'k', 'm', ',', '.', '/', '\x00',

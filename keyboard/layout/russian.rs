@@ -1,7 +1,10 @@
+#[link(name = "keyboard-layout-russian", vers = "1.0", package_id = "keyboard-layout-russian")];
+
+#[feature(globs)];
 use keyboard::key::*;
 
 mod keyboard {
-  extern mod key;
+  extern mod key = "keyboard-key";
 }
 
 static translateToChar:[char, ..173] = [

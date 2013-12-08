@@ -1,15 +1,15 @@
-#[link(name = "sha1", vers = "1.0")];
+#[link(name = "hash-sha1", vers = "1.0", package_id = "hash-sha1")];
 
+#[feature(globs)];
+use std::iter;
 use hash::digest::*;
 
-use std::uint;
-
 mod hash {
-  extern mod digest;
+  extern mod digest = "hash-digest";
 }
 
 pub fn hash_string(data: &str) -> Digest {
-  let foo: ~[u8] = data.byte_iter().collect();
+  let foo: ~[u8] = data.bytes().collect();
   hash(foo)
 }
 
@@ -39,10 +39,10 @@ pub fn hash(data: &[u8]) -> Digest {
 
   let bit_length = data.len() as u64 * 8;
 
-  do uint::range_step(0, number_bytes, 64) |x| {
-    do uint::range_step(0, 16, 1) |i| {
+  for x in iter::range_step(0, number_bytes, 64) {
+    for i in iter::range_step(0, 16, 1) {
       words[i] = {
-        let mut index = i*4 + x;
+        let mut index = (i as uint) * 4 + x;
         let mut left = 4;
 
         let mut chunk = 0 as u32;
@@ -65,17 +65,14 @@ pub fn hash(data: &[u8]) -> Digest {
 
         chunk
       };
+    }
 
-      true
-    };
-
-    do uint::range_step(0, 64, 1) |i| {
+    for i in iter::range_step(0, 64, 1) {
       words[i+16] = (words[i+13] ^ words[i+8] ^ words[i+2] ^ words[i]);
       words[i+16] = (words[i+16] << 1) | (words[i+16] >> 31);
-      true
-    };
+    }
 
-    do uint::range_step(0, 80, 1) |i| {
+    for i in iter::range_step(0, 80, 1) {
       let k = if      (i < 20) { 0x5A827999 }
               else if (i < 40) { 0x6ed9eba1 }
               else if (i < 60) { 0x8f1bbcdc }
@@ -92,18 +89,14 @@ pub fn hash(data: &[u8]) -> Digest {
       c = (b << 30) | (b >> 2);
       b = a;
       a = temp;
-
-      true
-    };
+    }
 
     a += a0;
     b += b0;
     c += c0;
     d += d0;
     e += e0;
-
-    true
-  };
+  }
 
   Digest { data: ~[a, b, c, d, e] }
 }

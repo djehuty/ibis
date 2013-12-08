@@ -1,4 +1,4 @@
-#[link(name = "stream", vers = "1.0")];
+#[link(name = "io-stream", vers = "1.0", package_id = "io-stream")];
 
 pub trait Readable {
   fn readInto(&self, buffer: &mut [u8]) -> bool;

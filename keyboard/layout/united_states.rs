@@ -1,9 +1,10 @@
-#[link(name = "united_states", vers = "1.0")];
+#[link(name = "keyboard-layout-united_states", vers = "1.0", package_id = "keyboard-layout-united_states")];
 
+#[feature(globs)];
 use keyboard::key::*;
 
 mod keyboard {
-  extern mod key;
+  extern mod key = "keyboard-key";
 }
 
 static translateToChar:[char, ..173] = [

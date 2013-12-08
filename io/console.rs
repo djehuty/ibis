@@ -1,17 +1,16 @@
-#[link(name = "console", vers = "1.0")];
+#[link(name = "io-console", vers = "1.0", package_id = "io-console")];
 
+use std::iter;
 use std::cast;
 use std::ptr;
-use std::os;
 use std::libc;
-use std::u32;
 
 mod drawing {
-  extern mod color;
+  extern mod color = "drawing-color";
 }
 
 mod text {
-  extern mod format;
+  extern mod format = "text-format";
 }
 
 struct Console {
@@ -63,7 +62,7 @@ fn nearestXtermColor(color: drawing::color::Color) -> u32 {
   let mut mindistance = 100.0;
   let mut ret = 0_u32;
 
-  do u32::range_step(0, 256, 1) |i| {
+  for i in iter::range_step(0_u32, 256, 1) {
     let comparedColor = colors[i];
     let red   = ((comparedColor >> 16) & 0xff) as f64 / 255_f64;
     let green = ((comparedColor >>  8) & 0xff) as f64 / 255_f64;
@@ -92,9 +91,7 @@ fn nearestXtermColor(color: drawing::color::Color) -> u32 {
       mindistance = distance;
       ret = i;
     }
-
-    true
-  };
+  }
 
   ret
 }
@@ -119,23 +116,22 @@ impl Console {
 }
 
 pub fn print(string: &str) {
-  let foo: ~[char] = string.iter().collect();
+  let foo: ~[char] = string.chars().collect();
   let arr: ~[u8] = unsafe{cast::transmute(foo)};
 
   unsafe {
     let mut count = 0u;
-    do arr.as_imm_buf |vbuf, len| {
+    arr.as_imm_buf(|vbuf, len| {
       while count < len {
-        let vb = ptr::const_offset(vbuf, count as int) as *libc::c_void;
+        let vb = ptr::offset(vbuf, count as int) as *libc::c_void;
         let nout = libc::write(1, vb, len as libc::size_t);
         if nout < 0 as libc::ssize_t {
             error!("error writing buffer");
-            error!("%s", os::last_os_error());
             fail!();
         }
         count += nout as uint;
       }
-    }
+    })
   }
 }
 

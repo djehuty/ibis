@@ -1,11 +1,11 @@
-#[link(name = "sha256", vers = "1.0")];
+#[link(name = "hash-sha256", vers = "1.0", package_id = "hash-sha256")];
 
+#[feature(globs)];
+use std::iter;
 use hash::digest::*;
 
-use std::uint;
-
 mod hash {
-  extern mod digest;
+  extern mod digest = "hash-digest";
 }
 
 static K: [u32, ..64] = [
@@ -20,7 +20,7 @@ static K: [u32, ..64] = [
 ];
 
 pub fn hash_string(data: &str) -> Digest {
-  let foo: ~[u8] = data.byte_iter().collect();
+  let foo: ~[u8] = data.bytes().collect();
   hash(foo)
 }
 
@@ -56,10 +56,10 @@ pub fn hash(data: &[u8]) -> Digest {
 
   let bit_length = data.len() as u64 * 8;
 
-  do uint::range_step(0, number_bytes, 64) |x| {
-    do uint::range_step(0, 16, 1) |i| {
+  for x in iter::range_step(0, number_bytes, 64) {
+    for i in iter::range_step(0, 16, 1) {
       words[i] = {
-        let mut index = i*4 + x;
+        let mut index = (i as uint) * 4 + x;
         let mut left = 4;
 
         let mut chunk = 0 as u32;
@@ -81,20 +81,16 @@ pub fn hash(data: &[u8]) -> Digest {
         }
 
         chunk
-      };
+      }
+    }
 
-      true
-    };
-
-    do uint::range_step(0, 48, 1) |i| {
+    for i in iter::range_step(0, 48, 1) {
       let s0 = ((words[i+1] >> 7) | (words[i+1] << 25)) ^ ((words[i+1] >> 18) | (words[i+1] << 14)) ^ ((words[i+1] >> 3));
       let s1 = ((words[i+14] >> 17) | (words[i+14] << 15)) ^ ((words[i+14] >> 19) | (words[i+14] << 13)) ^ ((words[i+14] >> 10));
       words[i+16] = words[i] + s0 + words[i+9] + s1;
+    }
 
-      true
-    };
-
-    do uint::range_step(0, 64, 1) |i| {
+    for i in iter::range_step(0, 64, 1) {
       let s0  = ((a >> 2) | (a << 30)) ^ ((a >> 13) | (a << 19)) ^ ((a >> 22) | (a << 10));
       let maj = (a & b) ^ (a & c) ^ (b & c);
       let t2  = s0 + maj;
@@ -110,9 +106,7 @@ pub fn hash(data: &[u8]) -> Digest {
       c = b;
       b = a;
       a = t1 + t2;
-
-      true
-    };
+    }
 
     a += a0;
     b += b0;
@@ -122,9 +116,7 @@ pub fn hash(data: &[u8]) -> Digest {
     f += f0;
     g += g0;
     h += h0;
-
-    true
-  };
+  }
 
   Digest { data: ~[a, b, c, d, e, f, g, h] }
 }

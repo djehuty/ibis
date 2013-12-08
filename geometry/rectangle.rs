@@ -1,11 +1,12 @@
-#[link(name = "rectangle", vers = "1.0")];
+#[link(name = "geometry-rectangle", vers = "1.0", package_id = "geometry-rectangle")];
 
+#[feature(globs)];
 use geometry::point::*;
 use geometry::line::*;
 
 mod geometry {
-  extern mod point;
-  extern mod line;
+  extern mod point = "geometry-point";
+  extern mod line  = "geometry-line";
 }
 
 pub struct Rectangle {

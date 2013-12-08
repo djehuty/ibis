@@ -1,7 +1,10 @@
+#[link(name = "keyboard-layout-spanish", vers = "1.0", package_id = "keyboard-layout-spanish")];
+
+#[feature(globs)];
 use keyboard::key::*;
 
 mod keyboard {
-  extern mod key;
+  extern mod key = "keyboard-key";
 }
 
 static translateToChar:[char, ..173] = [
@@ -9,7 +12,7 @@ static translateToChar:[char, ..173] = [
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\u00ba', '1', '2', '3', '4', '5', '6', '7',
-  '8', '9', '0', ''', '\u00a1', '\x00', '\x00', '\x00', '\x00', '\x00',
+  '8', '9', '0', '\'', '\u00a1', '\x00', '\x00', '\x00', '\x00', '\x00',
   '/', '*', '-', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', 'q', 'w', 'e', 'r', 't',
   'y', 'u', 'i', 'o', 'p', '\x00', '+', '\u00e7', '\x00', '\x00',

@@ -1,4 +1,4 @@
-#[link(name = "month", vers = "1.0")];
+#[link(name = "chrono-month", vers = "1.0", package_id = "chrono-month")];
 
 pub enum Month {
   January = 0x1,

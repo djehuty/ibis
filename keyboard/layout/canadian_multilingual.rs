@@ -1,7 +1,10 @@
+#[link(name = "keyboard-layout-canadian_multilingual", vers = "1.0", package_id = "keyboard-layout-canadian_multilingual")];
+
+#[feature(globs)];
 use keyboard::key::*;
 
 mod keyboard {
-  extern mod key;
+  extern mod key = "keyboard-key";
 }
 
 static translateToChar:[char, ..108] = [
@@ -24,7 +27,7 @@ static translateToCharShift:[char, ..108] = [
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', ' ', ')', '!', '@', '#', '$', '%', '?', '&',
-  '*', '(', '\x00', '\x00', '\\', '\u00c8', ''', '"', '\u00c9', '\u00c0',
+  '*', '(', '\x00', '\x00', '\\', '\u00c8', '\'', '"', '\u00c9', '\u00c0',
   '\x00', '\u00c7', ':', '_', '+', 'A', 'B', 'C', 'D', 'E',
   'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
   'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',

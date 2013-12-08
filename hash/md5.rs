@@ -1,10 +1,11 @@
-#[link(name = "md5", vers = "1.0")];
+#[link(name = "hash-md5", vers = "1.0", package_id = "hash-md5")];
 
-use std::uint;
+#[feature(globs)];
+use std::iter;
 use hash::digest::*;
 
 mod hash {
-  extern mod digest;
+  extern mod digest = "hash-digest";
 }
 
 static R: [u32, ..64] = [ 7, 12, 17, 22, 7, 12, 17, 22,
@@ -44,7 +45,7 @@ static G: [uint, ..64] = [  0,  1,  2,  3,  4,  5,  6,  7,
 
 // TODO: Need an iterator version for the hashing!
 pub fn hash_string(data: &str) -> Digest {
-  let foo: ~[u8] = data.byte_iter().collect();
+  let foo: ~[u8] = data.bytes().collect();
   hash(foo)
 }
 
@@ -63,8 +64,8 @@ pub fn hash(data: &[u8]) -> Digest {
 
   let bit_length = data.len() as u64 * 8;
 
-  do uint::range_step(0, number_bytes, 64) |x| {
-    do uint::range_step(0, 64, 1) |i| {
+  for x in iter::range_step(0, number_bytes, 64) {
+    for i in iter::range_step(0, 64, 1) {
       if (i < 16) {
         a += (b & c) | (!b & d);
       }
@@ -112,17 +113,13 @@ pub fn hash(data: &[u8]) -> Digest {
       c = b;
       b = a;
       a = tmp;
-
-      true
-    };
+    }
 
     a += a0;
     b += b0;
     c += c0;
     d += d0;
-
-    true
-  };
+  }
 
   a = ((a & 0xff) << 24) | ((a & 0xff00) << 8) | ((a & 0xff0000) >> 8) | ((a & 0xff000000) >> 24);
   b = ((b & 0xff) << 24) | ((b & 0xff00) << 8) | ((b & 0xff0000) >> 8) | ((b & 0xff000000) >> 24);

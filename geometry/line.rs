@@ -1,9 +1,10 @@
-#[link(name = "line", vers = "1.0")];
+#[link(name = "geometry-line", vers = "1.0", package_id = "geometry-line")];
 
+#[feature(globs)];
 use geometry::point::*;
 
 mod geometry {
-  extern mod point;
+  extern mod point = "geometry-point";
 }
 
 pub struct Line {
@@ -12,7 +13,7 @@ pub struct Line {
 }
 
 impl Line {
-  pub fn magnitude(&self) -> float {
+  pub fn magnitude(&self) -> f32 {
     let x = self.start.x - self.end.x;
     let y = self.start.y - self.end.y;
 

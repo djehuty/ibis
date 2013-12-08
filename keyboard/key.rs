@@ -1,4 +1,4 @@
-#[link(name = "key", vers = "1.0")];
+#[link(name = "keyboard-key", vers = "1.0", package_id = "keyboard-key")];
 
 pub struct Key {
   code: u32,

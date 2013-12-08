@@ -1,7 +1,7 @@
-#[link(name = "utf8", vers = "1.0")];
+#[link(name = "text-utf8", vers = "1.0", package_id = "text-utf8")];
 
 mod text {
-  extern mod unicode;
+  extern mod unicode = "text-unicode";
 }
 
 static UNI_SUR_HIGH_START:   u32 = 0xD800;

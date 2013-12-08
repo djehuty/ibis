@@ -1,7 +1,10 @@
+#[link(name = "keyboard-layout-dvorak", vers = "1.0", package_id = "keyboard-layout-dvorak")];
+
+#[feature(globs)];
 use keyboard::key::*;
 
 mod keyboard {
-  extern mod key;
+  extern mod key = "keyboard-key";
 }
 
 static translateToChar:[char, ..173] = [
@@ -11,7 +14,7 @@ static translateToChar:[char, ..173] = [
   '\x00', '\x00', '`', '1', '2', '3', '4', '5', '6', '7',
   '8', '9', '0', '[', ']', '\x00', '\x00', '\x00', '\x00', '\x00',
   '/', '*', '-', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-  '\x00', '\x00', '\x00', '\x00', '\x00', ''', ',', '.', 'p', 'y',
+  '\x00', '\x00', '\x00', '\x00', '\x00', '\'', ',', '.', 'p', 'y',
   'f', 'g', 'c', 'r', 'l', '/', '=', '\\', '\x00', '\x00',
   '\x00', '7', '8', '9', '+', '\x00', '\x00', '\x00', '\x00', '\x00',
   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', 'a', 'o', 'e',

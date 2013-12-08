@@ -1,11 +1,12 @@
-#[link(name = "date", vers = "1.0")];
+#[link(name = "chrono-date", vers = "1.0", package_id = "chrono-date")];
 
+#[feature(globs)];
 use chrono::month::*;
 use chrono::weekday::*;
 
 mod chrono {
-  extern mod month;
-  extern mod weekday;
+  extern mod month = "chrono-month";
+  extern mod weekday = "chrono-weekday";
 }
 
 pub struct Date {

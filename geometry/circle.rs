@@ -1,18 +1,19 @@
-#[link(name = "circle", vers = "1.0")];
+#[link(name = "geometry-circle", vers = "1.0", package_id = "geometry-circle")];
 
+#[feature(globs)];
 use geometry::point::*;
 use geometry::line::*;
 use geometry::rectangle::*;
 
 mod geometry {
-  extern mod point;
-  extern mod line;
-  extern mod rectangle;
+  extern mod point = "geometry-point";
+  extern mod line = "geometry-line";
+  extern mod rectangle = "geometry-rectangle";
 }
 
 pub struct Circle {
   center: Point,
-  radius: float
+  radius: f32
 }
 
 impl Circle {

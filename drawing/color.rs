@@ -1,6 +1,7 @@
-#[link(name = "color", vers = "1.0")];
+#[feature(struct_variant)];
+#[link(name = "drawing-color", vers = "1.0", package_id = "drawing-color")];
 
-use std::uint;
+use std::iter;
 
 pub enum Color {
   ColorRGBA { alpha: f64, red:f64, green:f64,      blue:f64 },
@@ -34,7 +35,7 @@ impl Color {
 
     let mut ctmp = [h + (1.0/3.0), h, h - (1.0/3.0)];
 
-    do uint::range_step(0, 3, 1) |i| {
+    for i in iter::range_step(0, 3, 1) {
       if (ctmp[i] < 0.0) {
         ctmp[i] += 1.0;
       }
@@ -54,9 +55,7 @@ impl Color {
       else {
         ctmp[i] = p;
       }
-
-      true
-    };
+    }
 
     let red   = if (s == 0.0) { l } else { ctmp[0] };
     let green = if (s == 0.0) { l } else { ctmp[1] };
@@ -144,13 +143,13 @@ impl Color {
     match *self {
       ColorRGBA {alpha: a, red: r, green: g, blue: b}
         => Color::rgba_to_hsla(r, g, b, a),
-      ColorHSLA {_} => *self
+      ColorHSLA { .. } => *self
     }
   }
 
   pub fn to_rgba(&self) -> Color {
     match *self {
-      ColorRGBA {_} => *self,
+      ColorRGBA { .. } => *self,
       ColorHSLA {alpha: a, hue: h, saturation: s, luminance: l}
         => Color::hsla_to_rgba(h, s, l, a)
     }
@@ -160,7 +159,7 @@ impl Color {
     match *self {
       ColorHSLA {alpha: a, hue: h, saturation: s, luminance: l}
         => Color::hsla_to_rgba(h, s, l, a).red(),
-      ColorRGBA {red: r, _} => r
+      ColorRGBA {red: r, .. } => r
     }
   }
 
@@ -168,7 +167,7 @@ impl Color {
     match *self {
       ColorHSLA {alpha: a, hue: h, saturation: s, luminance: l}
         => Color::hsla_to_rgba(h, s, l, a).green(),
-      ColorRGBA {green: g, _} => g
+      ColorRGBA {green: g, .. } => g
     }
   }
 
@@ -176,7 +175,7 @@ impl Color {
     match *self {
       ColorHSLA {alpha: a, hue: h, saturation: s, luminance: l}
         => Color::hsla_to_rgba(h, s, l, a).blue(),
-      ColorRGBA {blue: b, _} => b
+      ColorRGBA {blue: b, .. } => b
     }
   }
 
@@ -184,7 +183,7 @@ impl Color {
     match *self {
       ColorRGBA {alpha: a, red: r, green: g, blue: b}
         => Color::rgba_to_hsla(r, g, b, a).hue(),
-      ColorHSLA {hue: h, _} => h
+      ColorHSLA {hue: h, .. } => h
     }
   }
 
@@ -192,7 +191,7 @@ impl Color {
     match *self {
       ColorRGBA {alpha: a, red: r, green: g, blue: b}
         => Color::rgba_to_hsla(r, g, b, a).saturation(),
-      ColorHSLA {saturation: s, _} => s
+      ColorHSLA {saturation: s, .. } => s
     }
   }
 
@@ -200,14 +199,14 @@ impl Color {
     match *self {
       ColorRGBA {alpha: a, red: r, green: g, blue: b}
         => Color::rgba_to_hsla(r, g, b, a).luminance(),
-      ColorHSLA {luminance: l, _} => l
+      ColorHSLA {luminance: l, .. } => l
     }
   }
 
   pub fn alpha(&self) -> f64 {
     match *self {
-      ColorRGBA {alpha: a, _} => a,
-      ColorHSLA {alpha: a, _} => a
+      ColorRGBA {alpha: a, .. } => a,
+      ColorHSLA {alpha: a, .. } => a
     }
   }
 }
