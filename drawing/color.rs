@@ -209,4 +209,58 @@ impl Color {
       ColorHSLA {alpha: a, .. } => a
     }
   }
+
+  pub fn r8g8b8a8(&self) -> u32 {
+    match *self {
+      ColorRGBA { red: r, green: g, blue: b, alpha: a } =>
+        (r * 0xff as f64) as u32 | ((g * 0xff as f64) as u32 << 8) | ((b * 0xff as f64) as u32 << 16) | ((a * 0xff as f64) as u32 << 24),
+      ColorHSLA { .. } =>
+        self.to_rgba().r8g8b8a8(),
+    }
+  }
+
+  pub fn b8g8r8a8(&self) -> u32 {
+    match *self {
+      ColorRGBA { red: r, green: g, blue: b, alpha: a } =>
+        (b * 0xff as f64) as u32 | ((g * 0xff as f64) as u32 << 8) | ((r * 0xff as f64) as u32 << 16) | ((a * 0xff as f64) as u32 << 24),
+      ColorHSLA { .. } =>
+        self.to_rgba().b8g8r8a8(),
+    }
+  }
+
+  pub fn h8s8l8a8(&self) -> u32 {
+    match *self {
+      ColorRGBA { .. } =>
+        self.to_hsla().h8s8l8a8(),
+      ColorHSLA { hue: h, saturation: s, luminance: l, alpha: a } =>
+        (h * 0xff as f64) as u32 | ((s * 0xff as f64) as u32 << 8) | ((l * 0xff as f64) as u32 << 16) | ((a * 0xff as f64) as u32 << 24),
+    }
+  }
+
+  pub fn r8g8b8(&self) -> u32 {
+    match *self {
+      ColorRGBA { red: r, green: g, blue: b, .. } =>
+        (r * 0xff as f64) as u32 | ((g * 0xff as f64) as u32 << 8) | ((b * 0xff as f64) as u32 << 16),
+      ColorHSLA { .. } =>
+        self.to_rgba().r8g8b8(),
+    }
+  }
+
+  pub fn b8g8r8(&self) -> u32 {
+    match *self {
+      ColorRGBA { red: r, green: g, blue: b, .. } =>
+        (b * 0xff as f64) as u32 | ((g * 0xff as f64) as u32 << 8) | ((r * 0xff as f64) as u32 << 16),
+      ColorHSLA { .. } =>
+        self.to_rgba().b8g8r8(),
+    }
+  }
+
+  pub fn h8s8l8(&self) -> u32 {
+    match *self {
+      ColorRGBA { .. } =>
+        self.to_hsla().h8s8l8a8(),
+      ColorHSLA { hue: h, saturation: s, luminance: l, .. } =>
+        (h * 0xff as f64) as u32 | ((s * 0xff as f64) as u32 << 8) | ((l * 0xff as f64) as u32 << 16),
+    }
+  }
 }
