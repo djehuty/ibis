@@ -91,27 +91,31 @@ impl Drop for File {
 
 impl io::stream::Readable for File {
   // TODO: Errorable Option Type should be returned
-  fn readInto(&self, buffer: &mut [u8]) -> bool {
-    unsafe {
-      buffer.as_mut_buf(|buf_p, buf_len| {
-        let count = libc::fread(buf_p as *mut libc::c_void,
-                                1u as libc::size_t,
-                                buf_len as libc::size_t,
-                                self.descriptor as *libc::FILE);
+  fn readInto(&mut self, buffer: &mut [u8]) -> bool {
+    buffer.as_mut_buf(|buf_p, buf_len| {
+      self.readIntoPtr(buf_p, buf_len as u64)
+    })
+  }
 
-        count == (buf_len as u64)
-      })
+  fn readIntoPtr(&mut self, buf_p: *mut u8, amount: u64) -> bool {
+    unsafe {
+      let count = libc::fread(buf_p as *mut libc::c_void,
+                              1u as libc::size_t,
+                              amount as libc::size_t,
+                              self.descriptor as *libc::FILE);
+
+      count == amount
     }
   }
 
-  fn read(&self, amount: u64) -> ~[u8] {
+  fn read(&mut self, amount: u64) -> ~[u8] {
     let mut vector = vec::with_capacity(amount as uint);
     unsafe { vec::raw::set_len(&mut vector, amount as uint); }
-    (self as &io::stream::Readable).readInto(vector);
+    (self as &mut io::stream::Readable).readInto(vector);
     vector
   }
 
-  fn seek(&self, amount: i64) {
+  fn seek(&mut self, amount: i64) {
     unsafe {
       libc::fseek(self.descriptor as *libc::FILE,
                   amount as libc::c_long,
@@ -154,22 +158,26 @@ impl io::stream::Readable for File {
 }
 
 impl io::stream::Writable for File {
-  fn write(&self, data: &[u8]) {
+  fn write(&mut self, data: &[u8]) {
+    data.as_imm_buf(|vbuf, len| {
+      self.writeFromPtr(vbuf, len as u64);
+    });
+  }
+
+  fn writeFromPtr(&mut self, buf_p: *u8, amount: u64) {
     unsafe {
-      data.as_imm_buf(|vbuf, len| {
-        let nout = libc::fwrite(vbuf as *libc::c_void,
-                                1,
-                                len as libc::size_t,
-                                self.descriptor as *libc::FILE);
-        if nout != len as libc::size_t {
-          // Error
-        }
-      })
+      let nout = libc::fwrite(buf_p as *libc::c_void,
+                              1,
+                              amount as libc::size_t,
+                              self.descriptor as *libc::FILE);
+      if nout != amount as libc::size_t {
+        // Error
+      }
     }
   }
 
-  fn append(&self, data: &[u8]) {
-    let typed = self as &io::stream::Writable;
+  fn append(&mut self, data: &[u8]) {
+    let typed = self as &mut io::stream::Writable;
     let available = typed.available() as i64;
     typed.seek(available);
     typed.write(data);
@@ -178,7 +186,7 @@ impl io::stream::Writable for File {
     typed.seek(-back);
   }
 
-  fn seek(&self, amount: i64) {
+  fn seek(&mut self, amount: i64) {
     unsafe {
       libc::fseek(self.descriptor as *libc::FILE,
                   amount as libc::c_long,
@@ -240,27 +248,31 @@ impl File {
   }
 
   // TODO: Errorable Option Type should be returned
-  pub fn readInto(&self, buffer: &mut [u8]) -> bool {
-    unsafe {
-      buffer.as_mut_buf(|buf_p, buf_len| {
-        let count = libc::fread(buf_p as *mut libc::c_void,
-                                1u as libc::size_t,
-                                buf_len as libc::size_t,
-                                self.descriptor as *libc::FILE);
+  pub fn readInto(&mut self, buffer: &mut [u8]) -> bool {
+    buffer.as_mut_buf(|buf_p, buf_len| {
+      self.readIntoPtr(buf_p, buf_len as u64)
+    })
+  }
 
-        count == (buf_len as u64)
-      })
+  pub fn readIntoPtr(&mut self, buf_p: *mut u8, amount: u64) -> bool {
+    unsafe {
+      let count = libc::fread(buf_p as *mut libc::c_void,
+                              1u as libc::size_t,
+                              amount as libc::size_t,
+                              self.descriptor as *libc::FILE);
+
+      count == amount
     }
   }
 
-  pub fn read(&self, amount: u64) -> ~[u8] {
+  pub fn read(&mut self, amount: u64) -> ~[u8] {
     let mut vector = vec::with_capacity(amount as uint);
     unsafe { vec::raw::set_len(&mut vector, amount as uint); }
     self.readInto(vector);
     vector
   }
 
-  pub fn seek(&self, amount: i64) {
+  pub fn seek(&mut self, amount: i64) {
     unsafe {
       libc::fseek(self.descriptor as *libc::FILE,
                   amount as libc::c_long,
@@ -301,21 +313,25 @@ impl File {
     }
   }
 
-  pub fn write(&self, data: &[u8]) {
+  pub fn write(&mut self, data: &[u8]) {
+    data.as_imm_buf(|vbuf, len| {
+      self.writeFromPtr(vbuf, len as u64);
+    });
+  }
+
+  pub fn writeFromPtr(&mut self, buf_p: *u8, amount: u64) {
     unsafe {
-      data.as_imm_buf(|vbuf, len| {
-        let nout = libc::fwrite(vbuf as *libc::c_void,
-                                1,
-                                len as libc::size_t,
-                                self.descriptor as *libc::FILE);
-        if nout != len as libc::size_t {
-          // Error
-        }
-      })
+      let nout = libc::fwrite(buf_p as *libc::c_void,
+                              1,
+                              amount as libc::size_t,
+                              self.descriptor as *libc::FILE);
+      if nout != amount as libc::size_t {
+        // Error
+      }
     }
   }
 
-  pub fn append(&self, data: &[u8]) {
+  pub fn append(&mut self, data: &[u8]) {
     let available = self.available() as i64;
     self.seek(available);
     self.write(data);
@@ -327,27 +343,31 @@ impl File {
 
 impl io::stream::Streamable for File {
   // TODO: Errorable Option Type should be returned
-  fn readInto(&self, buffer: &mut [u8]) -> bool {
-    unsafe {
-      buffer.as_mut_buf(|buf_p, buf_len| {
-        let count = libc::fread(buf_p as *mut libc::c_void,
-                                1u as libc::size_t,
-                                buf_len as libc::size_t,
-                                self.descriptor as *libc::FILE);
+  fn readInto(&mut self, buffer: &mut [u8]) -> bool {
+    buffer.as_mut_buf(|buf_p, buf_len| {
+      self.readIntoPtr(buf_p, buf_len as u64)
+    })
+  }
 
-        count == (buf_len as u64)
-      })
+  fn readIntoPtr(&mut self, buf_p: *mut u8, amount: u64) -> bool {
+    unsafe {
+      let count = libc::fread(buf_p as *mut libc::c_void,
+                              1u as libc::size_t,
+                              amount as libc::size_t,
+                              self.descriptor as *libc::FILE);
+
+      count == amount
     }
   }
 
-  fn read(&self, amount: u64) -> ~[u8] {
+  fn read(&mut self, amount: u64) -> ~[u8] {
     let mut vector = vec::with_capacity(amount as uint);
     unsafe { vec::raw::set_len(&mut vector, amount as uint); }
-    (self as &io::stream::Streamable).readInto(vector);
+    (self as &mut io::stream::Streamable).readInto(vector);
     vector
   }
 
-  fn seek(&self, amount: i64) {
+  fn seek(&mut self, amount: i64) {
     unsafe {
       libc::fseek(self.descriptor as *libc::FILE,
                   amount as libc::c_long,
@@ -388,22 +408,26 @@ impl io::stream::Streamable for File {
     }
   }
 
-  fn write(&self, data: &[u8]) {
+  fn write(&mut self, data: &[u8]) {
+    data.as_imm_buf(|vbuf, len| {
+      self.writeFromPtr(vbuf, len as u64);
+    });
+  }
+
+  fn writeFromPtr(&mut self, buf_p: *u8, amount: u64) {
     unsafe {
-      data.as_imm_buf(|vbuf, len| {
-        let nout = libc::fwrite(vbuf as *libc::c_void,
-                                1,
-                                len as libc::size_t,
-                                self.descriptor as *libc::FILE);
-        if nout != len as libc::size_t {
-          // Error
-        }
-      })
+      let nout = libc::fwrite(buf_p as *libc::c_void,
+                              1,
+                              amount as libc::size_t,
+                              self.descriptor as *libc::FILE);
+      if nout != amount as libc::size_t {
+        // Error
+      }
     }
   }
 
-  fn append(&self, data: &[u8]) {
-    let typed = self as &io::stream::Streamable;
+  fn append(&mut self, data: &[u8]) {
+    let typed = self as &mut io::stream::Streamable;
     let available = typed.available() as i64;
     typed.seek(available);
     typed.write(data);
