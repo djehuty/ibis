@@ -1,4 +1,4 @@
-#[link(name = "text-utf8", vers = "1.0", package_id = "text-utf8")];
+#[crate_id="text-utf8#1.0"];
 
 mod text {
   extern mod unicode = "text-unicode";

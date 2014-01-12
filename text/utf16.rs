@@ -1,4 +1,4 @@
-#[link(name = "text-utf16", vers = "1.0", package_id = "text-utf16")];
+#[crate_id="text-utf16#1.0"];
 
 static UNI_SUR_HIGH_START:   u32 = 0xD800;
 static UNI_SUR_HIGH_END:     u32 = 0xDBFF;

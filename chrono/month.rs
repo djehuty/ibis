@@ -1,16 +1,20 @@
-#[link(name = "chrono-month", vers = "1.0", package_id = "chrono-month")];
+#[crate_id="chrono-month#1.0"];
 
-pub enum Month {
-  January = 0x1,
-  February,
-  March,
-  April,
-  May,
-  June,
-  July,
-  August,
-  September,
-  October,
-  November,
-  December
+pub mod chrono {
+  pub mod month {
+    pub enum Month {
+      January = 0x1,
+      February,
+      March,
+      April,
+      May,
+      June,
+      July,
+      August,
+      September,
+      October,
+      November,
+      December
+    }
+  }
 }

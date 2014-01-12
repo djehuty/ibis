@@ -1,4 +1,4 @@
-#[link(name = "text-unicode", vers = "1.0", package_id = "text-unicode")];
+#[crate_id="text-unicode#1.0"];
 
 static COMBINING_MARKS: [[u32, ..2], ..168] = [
   // Combining Diacritical Marks

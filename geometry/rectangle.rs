@@ -1,41 +1,43 @@
-#[link(name = "geometry-rectangle", vers = "1.0", package_id = "geometry-rectangle")];
-
+#[crate_id="geometry-rectangle#1.0"];
 #[feature(globs)];
-use geometry::point::*;
-use geometry::line::*;
 
-mod geometry {
-  extern mod point = "geometry-point";
-  extern mod line  = "geometry-line";
-}
+extern mod geometry_point = "geometry-point";
+extern mod geometry_line  = "geometry-line";
 
-pub struct Rectangle {
-  top_left: Point,
-  bottom_right: Point
-}
+pub mod geometry {
+  pub mod rectangle {
+    use geometry_point::geometry::point::*;
+    use geometry_line::geometry::line::*;
 
-impl Rectangle {
-  pub fn left_edge(&self) -> Line {
-    Line { start: self.top_left,
-                   end: Point { x: self.top_left.x,
-                                       y: self.bottom_right.y } }
-  }
+    pub struct Rectangle {
+      top_left: Point,
+      bottom_right: Point
+    }
 
-  pub fn right_edge(&self) -> Line {
-    Line { start: Point { x: self.bottom_right.x,
-                                       y: self.top_left.y },
-                   end: self.bottom_right }
-  }
+    impl Rectangle {
+      pub fn left_edge(&self) -> Line {
+        Line { start: self.top_left,
+                       end: Point { x: self.top_left.x,
+                                           y: self.bottom_right.y } }
+      }
 
-  pub fn bottom_edge(&self) -> Line {
-    Line { start: Point { x: self.top_left.x,
-                                       y: self.bottom_right.y },
-                   end: self.bottom_right }
-  }
+      pub fn right_edge(&self) -> Line {
+        Line { start: Point { x: self.bottom_right.x,
+                                           y: self.top_left.y },
+                       end: self.bottom_right }
+      }
 
-  pub fn top_edge(&self) -> Line {
-    Line { start: self.top_left,
-                   end: Point { x: self.bottom_right.x,
-                                       y: self.top_left.y } }
+      pub fn bottom_edge(&self) -> Line {
+        Line { start: Point { x: self.top_left.x,
+                                           y: self.bottom_right.y },
+                       end: self.bottom_right }
+      }
+
+      pub fn top_edge(&self) -> Line {
+        Line { start: self.top_left,
+                       end: Point { x: self.bottom_right.x,
+                                           y: self.top_left.y } }
+      }
+    }
   }
 }

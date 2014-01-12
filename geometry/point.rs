@@ -1,6 +1,10 @@
-#[link(name = "geometry-point", vers = "1.0", package_id = "geometry-point")];
+#[crate_id="geometry-point#1.0"];
 
-pub struct Point {
-  x: f32,
-  y: f32
+pub mod geometry {
+  pub mod point {
+    pub struct Point {
+      x: f32,
+      y: f32
+    }
+  }
 }
