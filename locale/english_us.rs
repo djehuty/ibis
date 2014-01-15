@@ -35,7 +35,6 @@ mod chrono {
 }
 
 mod text {
-  pub use text::format::*;
   pub mod format {
     pub use text_format::text::format::*;
   }
