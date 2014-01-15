@@ -8,7 +8,6 @@ pub mod io {
     use std::libc;
     use io_stream::io::stream::{Read, Write, ReadWrite, Executable, ReadExecutable, WriteExecutable, ReadWriteExecutable};
 
-#[path = ".libs/io"]
     pub struct File {
       descriptor: u64
     }
