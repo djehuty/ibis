@@ -1,7 +1,7 @@
 #[crate_id="system-culture#1.0"];
 #[feature(globs)];
 
-extern mod culture_locale = "culture-locale";
+extern mod culture_locale    = "culture-locale";
 extern mod locale_english_us = "locale-english_us";
 extern mod locale_french_fr  = "locale-french_fr";
 
