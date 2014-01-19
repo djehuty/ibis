@@ -209,6 +209,11 @@ pub mod io {
         }
       }
 
+      pub fn readAll(&mut self) -> ~[u8] {
+        let amount = self.available();
+        self.read(amount)
+      }
+
       pub fn read<'a>(&'a mut self, amount: u64) -> ~[u8] {
         // slice, if we can
         if amount <= self.regionAvailable() {
@@ -333,6 +338,10 @@ pub mod io {
         self.read(amount)
       }
 
+      fn readAll(&mut self) -> ~[u8] {
+        self.readAll()
+      }
+
       fn seekTo<'a>(&'a mut self, position: u64) {
         self.seekTo(position)
       }
@@ -435,6 +444,10 @@ pub mod io {
 
       fn read<'a>(&'a mut self, amount: u64) -> ~[u8] {
         self.read(amount)
+      }
+
+      fn readAll(&mut self) -> ~[u8] {
+        self.readAll()
       }
 
       fn write<'a>(&'a mut self, buffer: &[u8]) {

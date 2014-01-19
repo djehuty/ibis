@@ -2,7 +2,7 @@
 #[feature(globs)];
 
 extern mod drawing_color = "drawing-color";
-extern mod text_format = "text-format";
+extern mod text_format   = "text-format";
 
 mod drawing {
   pub mod color {

@@ -5,6 +5,7 @@ pub mod io {
       fn readInto(&mut self, buffer: &mut [u8]) -> bool;
       fn readIntoPtr(&mut self, buf_p: *mut u8, amount: u64) -> bool;
       fn read(&mut self, amount: u64) -> ~[u8];
+      fn readAll(&mut self) -> ~[u8];
 
       fn seek(&mut self, amount: i64);
       fn seekTo(&mut self, position: u64);
@@ -38,6 +39,7 @@ pub mod io {
       fn readInto(&mut self, buffer: &mut [u8]) -> bool;
       fn readIntoPtr(&mut self, buf_p: *mut u8, amount: u64) -> bool;
       fn read(&mut self, amount: u64) -> ~[u8];
+      fn readAll(&mut self) -> ~[u8];
       fn write(&mut self, data: &[u8]);
       fn writeFromReader(&mut self, data: &mut Readable, amount: u64);
       fn writeFromStream(&mut self, data: &mut Streamable, amount: u64);

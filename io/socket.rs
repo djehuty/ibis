@@ -11,10 +11,24 @@ mod os {
   pub type size_t    = u64;
   pub type ssize_t   = i64;
   pub type socklen_t = u32;
+  pub type c_long    = i64;
+  pub type c_ulong   = u64;
+  pub type time_t    = i32;
+
+  pub static NFDBITS:i32 = 64;
+
+  pub struct timeval {
+    tv_sec:  c_long,
+    tv_usec: c_long,
+  }
 
   pub struct sockaddr {
     sa_family: u16,
     sa_data:   [u8,..14],
+  }
+
+  pub struct fd_set {
+    fds_bits: [c_long,..(1024/NFDBITS)],
   }
 
   pub struct addrinfo {
@@ -99,11 +113,42 @@ mod os {
     IPPROTO_COMP = 108,
   }
 
+  /*pub enum RecvOptions {
+    MSG_PEEK     = 0x2,
+    MSG_DONTWAIT = 0x40,
+  }*/
+
+  pub enum FileControlCommands {
+    F_GETFL = 6,
+    F_SETFL = 7,
+  }
+
+  pub enum FileControlOptions {
+    O_NONBLOCK = 128,
+  }
+
+  pub enum IoControl {
+    FIONREAD = 0x541b,
+  }
+
+/*
+  pub enum SocketLevel {
+    SOL_SOCKET = 1,
+  }
+
+  pub enum SocketOptions {
+    SO_ERROR = 4,
+  }
+  */
+
   #[nolink]
   extern {
     //pub fn gai_strerror(ecode: i32) -> *u8;
     //pub fn gethostname(name: *u8, namelen: i32) -> i32;
     //pub fn getnameinfo(sa: *sockaddr, salen: socklen_t, node: *u8, nodelen: socklen_t, service: *u8, servicelen: socklen_t, flags: i32) -> i32;
+    pub fn ioctl(d: i32, request: c_ulong, ...) -> i32;
+    pub fn fcntl(fd: i32, cmd: i32, ...) -> i32;
+    //pub fn getsockopt(sockfd: i32, level: i32, optname: i32, optval: *i32, optlen: *socklen_t) -> i32;
     pub fn getaddrinfo(nodename: *u8, servname: *u8, hints: *addrinfo, res: **addrinfo) -> i32;
     pub fn freeaddrinfo(ai: *addrinfo);
     pub fn socket(af: i32, socket_type: i32, protocol: i32) -> i32;
@@ -112,6 +157,8 @@ mod os {
     pub fn close(fd: i32) -> i32;
     pub fn recv(s: i32, buf: *mut u8, len: size_t, flags: i32) -> ssize_t;
     pub fn send(s: i32, buf: *u8, len: size_t, flags: i32) -> ssize_t;
+    pub fn select(nfds: i32, readfds: *mut fd_set, writefds: *mut fd_set,
+                  errorfds: *mut fd_set, timeout: *timeval) -> i32;
   }
 }
 
@@ -121,10 +168,16 @@ pub mod io {
     //use io_stream::io::stream::{Read, Write, ReadWrite, Executable, ReadExecutable, WriteExecutable, ReadWriteExecutable};
 
     pub struct Socket {
-      descriptor: u64
+      descriptor: u64,
+      connected:  bool,
     }
 
-    pub fn connect(hostname: &str, port: u16) -> ~::io_stream::io::stream::Result {
+    pub enum Connection {
+      Connected(~Socket),
+      Error(u64)
+    }
+
+    pub fn connect(hostname: &str, port: u16) -> ~Connection {
       let ai = ::os::addrinfo {
         ai_flags:     0,
         ai_family:    ::os::AF_UNSPEC   as i32,
@@ -147,7 +200,7 @@ pub mod io {
       if error != 0 {
         // Error connecting
         unsafe { ::os::freeaddrinfo(ai_result_ptr) };
-        return ~::io_stream::io::stream::Error(0);
+        return ~Error(0);
       }
 
       let ai_result = unsafe { *ai_result_ptr };
@@ -158,11 +211,18 @@ pub mod io {
 
       if fd == -1 {
         unsafe { ::os::freeaddrinfo(ai_result_ptr) };
-        ~::io_stream::io::stream::Error(0)
+        ~Error(0)
       }
       else {
+        unsafe {
+          let mut flags = ::os::fcntl(fd, ::os::F_GETFL as i32);
+          flags |= ::os::O_NONBLOCK as i32;
+          ::os::fcntl(fd, ::os::F_SETFL as i32, flags);
+        }
+
         let socket = ~Socket {
-          descriptor: fd as u64
+          descriptor: fd as u64,
+          connected:  true,
         };
 
         let result = unsafe {
@@ -173,10 +233,10 @@ pub mod io {
 
         if result == -1 {
           unsafe { ::os::close(fd); }
-          ~::io_stream::io::stream::Error(0)
+          ~Error(0)
         }
         else {
-          ~::io_stream::io::stream::Stream(socket as ~::io_stream::io::stream::Streamable)
+          ~Connected(socket)
         }
       }
     }
@@ -201,6 +261,10 @@ pub mod io {
 
       fn read(&mut self, amount: u64) -> ~[u8] {
         self.read(amount)
+      }
+
+      fn readAll(&mut self) -> ~[u8] {
+        self.readAll()
       }
 
       fn seekTo(&mut self, _: u64) {
@@ -291,21 +355,28 @@ pub mod io {
     }
 
     impl Socket {
+      pub fn connected(&self) -> bool {
+        self.connected
+      }
+
       pub fn stream(&self) -> ~::io_stream::io::stream::Streamable {
         ~Socket {
-          descriptor: self.descriptor
+          descriptor: self.descriptor,
+          connected:  self.connected
         } as ~::io_stream::io::stream::Streamable
       }
 
       pub fn reader(&self) -> ~::io_stream::io::stream::Readable {
         ~Socket {
-          descriptor: self.descriptor
+          descriptor: self.descriptor,
+          connected:  self.connected
         } as ~::io_stream::io::stream::Readable
       }
 
       pub fn writer(&self) -> ~::io_stream::io::stream::Writable {
         ~Socket {
-          descriptor: self.descriptor
+          descriptor: self.descriptor,
+          connected:  self.connected
         } as ~::io_stream::io::stream::Writable
       }
 
@@ -316,9 +387,46 @@ pub mod io {
       }
 
       pub fn readIntoPtr(&mut self, buf_p: *mut u8, amount: u64) -> bool {
-        // TODO: select() based, non blocking
-        unsafe {
-          ::os::recv(self.descriptor as i32, buf_p, amount as ::os::size_t, 0);
+        if amount == 0 {
+          // Check for disconnect using select and timeout of 0
+          let mut set = ::os::fd_set {
+            fds_bits: [0,..(1024/::os::NFDBITS)]
+          };
+
+          let tval = ::os::timeval {
+            tv_sec:  0,
+            tv_usec: 0,
+          };
+
+          set.fds_bits[(self.descriptor as i32) / ::os::NFDBITS] |= (1 << ((self.descriptor as i32) % ::os::NFDBITS));
+
+          let selected =
+            unsafe {
+              ::os::select(self.descriptor as i32 + 1,
+                           &mut set as *mut ::os::fd_set,
+                           0 as *mut ::os::fd_set,
+                           0 as *mut ::os::fd_set,
+                           &tval as *::os::timeval)
+            };
+
+          if selected > 0 {
+            // Descriptors found!
+            if self.available() == 0 {
+              self.connected = false
+            }
+          }
+
+          return true;
+        }
+
+        let amount_read =
+          unsafe {
+            ::os::recv(self.descriptor as i32, buf_p, amount as ::os::size_t, 0)
+          };
+
+        if amount_read == 0 {
+          // Connection closed
+          self.connected = false;
         }
 
         true
@@ -329,6 +437,45 @@ pub mod io {
         unsafe { vector.set_len(amount as uint); }
         self.readInto(vector);
         vector
+      }
+
+      pub fn readAll(&mut self) -> ~[u8] {
+        let amount = self.available();
+
+        if amount == 0 {
+          // Check for disconnect using select and timeout of 0
+          let mut set = ::os::fd_set {
+            fds_bits: [0,..(1024/::os::NFDBITS)]
+          };
+
+          let tval = ::os::timeval {
+            tv_sec:  0,
+            tv_usec: 0,
+          };
+
+          set.fds_bits[(self.descriptor as i32) / ::os::NFDBITS] |= (1 << ((self.descriptor as i32) % ::os::NFDBITS));
+
+          let selected =
+            unsafe {
+              ::os::select(self.descriptor as i32 + 1,
+                           &mut set as *mut ::os::fd_set,
+                           0 as *mut ::os::fd_set,
+                           0 as *mut ::os::fd_set,
+                           &tval as *::os::timeval)
+            };
+
+          if selected > 0 {
+            // Descriptors found!
+            if self.available() == 0 {
+              self.connected = false
+            }
+          }
+
+          ~[]
+        }
+        else {
+          self.read(amount)
+        }
       }
 
       pub fn seekTo(&mut self, _: u64) {
@@ -342,7 +489,11 @@ pub mod io {
       }
 
       pub fn available(&self) -> u64 {
-        0
+        unsafe {
+          let bytes_available:i32 = 0;
+          ::os::ioctl(self.descriptor as i32, ::os::FIONREAD as ::os::c_ulong, &bytes_available);
+          bytes_available as u64
+        }
       }
 
       pub fn position(&self) -> u64 {
@@ -390,6 +541,10 @@ pub mod io {
 
       fn read(&mut self, amount: u64) -> ~[u8] {
         self.read(amount)
+      }
+
+      fn readAll(&mut self) -> ~[u8] {
+        self.readAll()
       }
 
       fn seekTo(&mut self, _: u64) {

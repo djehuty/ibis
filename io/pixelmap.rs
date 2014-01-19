@@ -306,35 +306,39 @@ pub mod io {
     }
 
     impl ::io_stream::io::stream::Readable for Pixelmap {
-      fn readInto<'a>(&'a mut self, buffer: &mut [u8]) -> bool {
+      fn readInto(&mut self, buffer: &mut [u8]) -> bool {
         self.reader().readInto(buffer)
       }
 
-      fn readIntoPtr<'a>(&'a mut self, buf_p: *mut u8, amount: u64) -> bool {
+      fn readIntoPtr(&mut self, buf_p: *mut u8, amount: u64) -> bool {
         self.reader().readIntoPtr(buf_p, amount)
       }
 
-      fn read<'a>(&'a mut self, amount: u64) -> ~[u8] {
+      fn read(&mut self, amount: u64) -> ~[u8] {
         self.reader().read(amount)
       }
 
-      fn seekTo<'a>(&'a mut self, position: u64) {
+      fn readAll(&mut self) -> ~[u8] {
+        self.reader().readAll()
+      }
+
+      fn seekTo(&mut self, position: u64) {
         self.reader().seekTo(position)
       }
 
-      fn seek<'a>(&'a mut self, amount: i64) {
+      fn seek(&mut self, amount: i64) {
         self.reader().seek(amount)
       }
 
-      fn length<'a>(&'a self) -> u64 {
+      fn length(&self) -> u64 {
         self.imm_reader().length()
       }
 
-      fn available<'a>(&'a self) -> u64 {
+      fn available(&self) -> u64 {
         self.imm_reader().available()
       }
 
-      fn position<'a>(&'a self) -> u64 {
+      fn position(&self) -> u64 {
         self.imm_reader().position()
       }
 
@@ -348,7 +352,7 @@ pub mod io {
     }
 
     impl ::io_stream::io::stream::Writable for Pixelmap {
-      fn write<'a>(&'a mut self, buffer: &[u8]) {
+      fn write(&mut self, buffer: &[u8]) {
         self.writer().write(buffer)
       }
 
@@ -356,47 +360,47 @@ pub mod io {
         self.writer().writeFromPtr(buf_p, amount);
       }
 
-      fn writeFromReader<'a>(&'a mut self, data: &mut ::io_stream::io::stream::Readable, amount: u64) {
+      fn writeFromReader(&mut self, data: &mut ::io_stream::io::stream::Readable, amount: u64) {
         self.writer().writeFromReader(data, amount)
       }
 
-      fn writeFromStream<'a>(&'a mut self, data: &mut ::io_stream::io::stream::Streamable, amount: u64) {
+      fn writeFromStream(&mut self, data: &mut ::io_stream::io::stream::Streamable, amount: u64) {
         self.writer().writeFromStream(data, amount)
       }
 
-      fn append<'a>(&'a mut self, buffer: &[u8]) {
+      fn append(&mut self, buffer: &[u8]) {
         self.writer().append(buffer)
       }
 
-      fn appendFromPtr<'a>(&'a mut self, buf_p: *u8, amount: u64) {
+      fn appendFromPtr(&mut self, buf_p: *u8, amount: u64) {
         self.writer().appendFromPtr(buf_p, amount)
       }
 
-      fn appendFromReader<'a>(&'a mut self, data: &mut ::io_stream::io::stream::Readable, amount: u64) {
+      fn appendFromReader(&mut self, data: &mut ::io_stream::io::stream::Readable, amount: u64) {
         self.writer().appendFromReader(data, amount)
       }
 
-      fn appendFromStream<'a>(&'a mut self, data: &mut ::io_stream::io::stream::Streamable, amount: u64) {
+      fn appendFromStream(&mut self, data: &mut ::io_stream::io::stream::Streamable, amount: u64) {
         self.writer().appendFromStream(data, amount)
       }
 
-      fn seekTo<'a>(&'a mut self, position: u64) {
+      fn seekTo(&mut self, position: u64) {
         self.writer().seekTo(position)
       }
 
-      fn seek<'a>(&'a mut self, amount: i64) {
+      fn seek(&mut self, amount: i64) {
         self.writer().seek(amount)
       }
 
-      fn length<'a>(&'a self) -> u64 {
+      fn length(&self) -> u64 {
         self.imm_writer().length()
       }
 
-      fn available<'a>(&'a self) -> u64 {
+      fn available(&self) -> u64 {
         self.imm_writer().available()
       }
 
-      fn position<'a>(&'a self) -> u64 {
+      fn position(&self) -> u64 {
         self.imm_writer().position()
       }
 
@@ -410,19 +414,23 @@ pub mod io {
     }
 
     impl ::io_stream::io::stream::Streamable for Pixelmap {
-      fn readInto<'a>(&'a mut self, buffer: &mut [u8]) -> bool {
+      fn readInto(&mut self, buffer: &mut [u8]) -> bool {
         self.stream().readInto(buffer)
       }
 
-      fn readIntoPtr<'a>(&'a mut self, buf_p: *mut u8, amount: u64) -> bool {
+      fn readIntoPtr(&mut self, buf_p: *mut u8, amount: u64) -> bool {
         self.stream().readIntoPtr(buf_p, amount)
       }
 
-      fn read<'a>(&'a mut self, amount: u64) -> ~[u8] {
+      fn read(&mut self, amount: u64) -> ~[u8] {
         self.stream().read(amount)
       }
 
-      fn write<'a>(&'a mut self, buffer: &[u8]) {
+      fn readAll(&mut self) -> ~[u8] {
+        self.stream().readAll()
+      }
+
+      fn write(&mut self, buffer: &[u8]) {
         self.stream().write(buffer)
       }
 
@@ -430,47 +438,47 @@ pub mod io {
         self.stream().writeFromPtr(buf_p, amount);
       }
 
-      fn writeFromReader<'a>(&'a mut self, data: &mut ::io_stream::io::stream::Readable, amount: u64) {
+      fn writeFromReader(&mut self, data: &mut ::io_stream::io::stream::Readable, amount: u64) {
         self.writer().writeFromReader(data, amount)
       }
 
-      fn writeFromStream<'a>(&'a mut self, data: &mut ::io_stream::io::stream::Streamable, amount: u64) {
+      fn writeFromStream(&mut self, data: &mut ::io_stream::io::stream::Streamable, amount: u64) {
         self.writer().writeFromStream(data, amount)
       }
 
-      fn append<'a>(&'a mut self, buffer: &[u8]) {
+      fn append(&mut self, buffer: &[u8]) {
         self.stream().append(buffer)
       }
 
-      fn appendFromPtr<'a>(&'a mut self, buf_p: *u8, amount: u64) {
+      fn appendFromPtr(&mut self, buf_p: *u8, amount: u64) {
         self.stream().appendFromPtr(buf_p, amount)
       }
 
-      fn appendFromReader<'a>(&'a mut self, data: &mut ::io_stream::io::stream::Readable, amount: u64) {
+      fn appendFromReader(&mut self, data: &mut ::io_stream::io::stream::Readable, amount: u64) {
         self.stream().appendFromReader(data, amount)
       }
 
-      fn appendFromStream<'a>(&'a mut self, data: &mut ::io_stream::io::stream::Streamable, amount: u64) {
+      fn appendFromStream(&mut self, data: &mut ::io_stream::io::stream::Streamable, amount: u64) {
         self.stream().appendFromStream(data, amount)
       }
 
-      fn seekTo<'a>(&'a mut self, position: u64) {
+      fn seekTo(&mut self, position: u64) {
         self.stream().seekTo(position)
       }
 
-      fn seek<'a>(&'a mut self, amount: i64) {
+      fn seek(&mut self, amount: i64) {
         self.stream().seek(amount)
       }
 
-      fn length<'a>(&'a self) -> u64 {
+      fn length(&self) -> u64 {
         self.imm_stream().length()
       }
 
-      fn available<'a>(&'a self) -> u64 {
+      fn available(&self) -> u64 {
         self.imm_stream().available()
       }
 
-      fn position<'a>(&'a self) -> u64 {
+      fn position(&self) -> u64 {
         self.imm_stream().position()
       }
 

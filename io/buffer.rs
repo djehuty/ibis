@@ -151,6 +151,11 @@ pub mod io {
         ret.to_owned()
       }
 
+      pub fn readAll(&mut self) -> ~[u8] {
+        let amount = self.available();
+        self.read(amount)
+      }
+
       pub fn write(&mut self, buffer: &[u8]) {
         self.writeFromPtr(&buffer[0] as *u8, buffer.len() as u64);
       }
@@ -269,6 +274,10 @@ pub mod io {
         self.read(amount)
       }
 
+      fn readAll(&mut self) -> ~[u8] {
+        self.readAll()
+      }
+
       fn seekTo(&mut self, position: u64) {
         self.seekTo(position)
       }
@@ -371,6 +380,10 @@ pub mod io {
 
       fn read(&mut self, amount: u64) -> ~[u8] {
         self.read(amount)
+      }
+
+      fn readAll(&mut self) -> ~[u8] {
+        self.readAll()
       }
 
       fn write(&mut self, buffer: &[u8]) {
