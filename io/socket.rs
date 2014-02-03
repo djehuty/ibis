@@ -170,6 +170,8 @@ pub mod io {
     pub struct Socket {
       descriptor: u64,
       connected:  bool,
+      hostname:   ~str,
+      port:       u16,
     }
 
     pub enum Connection {
@@ -223,6 +225,8 @@ pub mod io {
         let socket = ~Socket {
           descriptor: fd as u64,
           connected:  true,
+          hostname:   hostname.to_owned(),
+          port:       port,
         };
 
         let result = unsafe {
@@ -359,24 +363,69 @@ pub mod io {
         self.connected
       }
 
+      pub fn connect(&mut self) {
+        let ai = ::os::addrinfo {
+          ai_flags:     0,
+          ai_family:    ::os::AF_UNSPEC   as i32,
+          ai_socktype:  ::os::SOCK_STREAM as i32,
+          ai_protocol:  ::os::IPPROTO_TCP as i32,
+          ai_addrlen:   0,
+          ai_addr:      0 as *::os::sockaddr,
+          ai_canonname: 0 as *char,
+          ai_next:      0 as *::os::addrinfo,
+        };
+
+        let ai_result_ptr: *::os::addrinfo = 0 as *::os::addrinfo;
+
+        let port_string = ::text_format::text::format::integer(self.port as i64, 10) + "\0";
+
+        let error = unsafe {
+          ::os::getaddrinfo(self.hostname.as_ptr(), port_string.as_ptr(), &ai as *::os::addrinfo, &ai_result_ptr as **::os::addrinfo)
+        };
+
+        if error != 0 {
+          // Error connecting
+          unsafe { ::os::freeaddrinfo(ai_result_ptr) };
+        }
+
+        let ai_result = unsafe { *ai_result_ptr };
+
+        let result = unsafe {
+          ::os::connect(self.descriptor as i32, ai_result.ai_addr, ai_result.ai_addrlen as ::os::socklen_t)
+        };
+
+        unsafe { ::os::freeaddrinfo(ai_result_ptr) };
+
+        if result == -1 {
+          // TODO: is this good to do?
+          unsafe { ::os::close(self.descriptor as i32); }
+        }
+      }
+
       pub fn stream(&self) -> ~::io_stream::io::stream::Streamable {
         ~Socket {
           descriptor: self.descriptor,
-          connected:  self.connected
+          connected:  self.connected,
+          port:       self.port,
+          hostname:   self.hostname.clone(),
         } as ~::io_stream::io::stream::Streamable
       }
 
       pub fn reader(&self) -> ~::io_stream::io::stream::Readable {
         ~Socket {
           descriptor: self.descriptor,
-          connected:  self.connected
+          connected:  self.connected,
+          port:       self.port,
+          hostname:   self.hostname.clone(),
         } as ~::io_stream::io::stream::Readable
       }
 
       pub fn writer(&self) -> ~::io_stream::io::stream::Writable {
         ~Socket {
           descriptor: self.descriptor,
-          connected:  self.connected
+          connected:  self.connected,
+          port:       self.port,
+          hostname:   self.hostname.clone(),
         } as ~::io_stream::io::stream::Writable
       }
 
